@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable/spr_card_add.xml" value="0.1085" />
+        <entry key="app/src/main/res/drawable/spr_player_info.xml" value="0.1595" />
+        <entry key="app/src/main/res/drawable/spr_player_turn.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/spr_popup_close.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.337469482421875" />
+        <entry key="app/src/main/res/layout/asset_item.xml" value="0.4629989402881567" />
+        <entry key="app/src/main/res/layout/card_item.xml" value="1.0085980055653925" />
+        <entry key="app/src/main/res/layout/card_item_asset.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/card_item_money.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/card_item_price_visible.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/money_item.xml" value="0.1947463768115942" />
+        <entry key="app/src/main/res/layout/player_item.xml" value="0.1947463768115942" />
+        <entry key="app/src/main/res/layout/player_layout.xml" value="0.1947463768115942" />
+        <entry key="app/src/main/res/layout/popup_player.xml" value="0.20792234116706299" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
