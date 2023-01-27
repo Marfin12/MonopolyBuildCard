@@ -16,8 +16,6 @@ import com.example.monopolybuildcard.databinding.ActivityMainBinding
 import com.example.monopolybuildcard.money.MoneyAdapter
 import com.example.monopolybuildcard.player.PlayerAdapter
 import com.example.monopolybuildcard.player.PlayerData
-import java.text.FieldPosition
-
 
 class MainActivity : AppCompatActivity() {
 
