@@ -1,5 +1,7 @@
-package com.example.monopolybuildcard
+package com.example.monopolybuildcard.main
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.Window
@@ -7,7 +9,10 @@ import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.monopolybuildcard.R
+import com.example.monopolybuildcard.Util
 import com.example.monopolybuildcard.asset.AssetAdapter
 import com.example.monopolybuildcard.card.CardAdapter
 import com.example.monopolybuildcard.card.CardData
@@ -18,60 +23,38 @@ import com.example.monopolybuildcard.player.PlayerAdapter
 import com.example.monopolybuildcard.player.PlayerData
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        const val EXTRA_ROOM_NAME = "extra_room_name"
 
+        fun launch(activity: Activity, roomName: String) {
+            val intent = Intent(activity, MainActivity::class.java)
+            intent.putExtra(EXTRA_ROOM_NAME, roomName)
+
+            activity.startActivity(intent)
+        }
+    }
+
+    private lateinit var mainViewModel: MainViewModel
     private lateinit var binding: ActivityMainBinding
+    private lateinit var roomName: String
+
     private var isShowPopupAfterSelectingCard = true
     private var isPopupNeverShownAfterSelectingCard = true
+
     private var currentTurn = -1
-    private val defaultCardData = mutableListOf(
-        CardData(R.drawable.spr_card_money_1, CardType.MONEY_TYPE),
-        CardData(R.drawable.spr_card_money_1, CardType.MONEY_TYPE),
-        CardData(R.drawable.spr_card_money_1, CardType.MONEY_TYPE),
-        CardData(R.drawable.spr_card_asset_brown_apartement, CardType.ASSET_TYPE),
-        CardData(R.drawable.spr_card_asset_brown_apartement, CardType.ASSET_TYPE)
-    )
+//    private val defaultCardData = mutableListOf(
+//        CardData(R.drawable.spr_card_money_1, CardType.MONEY_TYPE),
+//        CardData(R.drawable.spr_card_money_1, CardType.MONEY_TYPE),
+//        CardData(R.drawable.spr_card_money_1, CardType.MONEY_TYPE),
+//        CardData(R.drawable.spr_card_asset_brown_apartement, CardType.ASSET_TYPE),
+//        CardData(R.drawable.spr_card_asset_brown_apartement, CardType.ASSET_TYPE)
+//    )
 
-    private var currentPlayerData = PlayerData(
-        "Player 1",
-        0,
-        0,
-        mutableListOf(),
-        mutableListOf(),
-        defaultCardData,
-        true
-    )
+    private var currentPlayerData = PlayerData()
+    private var currentRoomData = RoomData()
+    private val playerAdapter: PlayerAdapter = PlayerAdapter(mutableListOf())
 
-    private val playerAdapter: PlayerAdapter = PlayerAdapter(
-        mutableListOf(
-            PlayerData(
-                "Player 2",
-                0,
-                0,
-                mutableListOf(),
-                mutableListOf(),
-                defaultCardData,
-                false
-            ),PlayerData(
-                "Player 3",
-                0,
-                0,
-                mutableListOf(),
-                mutableListOf(),
-                defaultCardData,
-                false
-            ),PlayerData(
-                "Player 4",
-                0,
-                0,
-                mutableListOf(),
-                mutableListOf(),
-                defaultCardData,
-                false
-            )
-        )
-    )
-
-    private val cardAdapter: CardAdapter = CardAdapter(currentPlayerData.listCard)
+    private val cardAdapter: CardAdapter = CardAdapter(mutableListOf())
     private val moneyAdapter: MoneyAdapter = MoneyAdapter(currentPlayerData.listMoney)
     private val assetAdapter: AssetAdapter = AssetAdapter(currentPlayerData.listAsset)
 
@@ -84,15 +67,39 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initPlayer()
+        roomName = intent.getStringExtra(EXTRA_ROOM_NAME) ?: ""
+
+        initViewModel()
         initComponent()
         initAdapter()
+    }
+
+    private fun initViewModel() {
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
+        mainViewModel.updatePlayer(roomName)
+
+        mainViewModel.roomDataData.observe(this) { roomData ->
+            currentRoomData = roomData
+            if (roomData.status != "waiting") playerAdapter.clearAllPlayer()
+            roomData.users?.forEach { playerData ->
+                if (playerData.id == Util.getAndroidId(this@MainActivity)) {
+                    currentPlayerData = playerData
+                    currentPlayerData.cards
+                    initPlayer()
+                } else {
+                    playerAdapter.addPlayer(playerData)
+                }
+            }
+        }
     }
 
     private fun initPlayer() {
         binding.tvPlayerName.text = currentPlayerData.name
         binding.tvPlayerAsset.text = "Asset: ${currentPlayerData.asset.toString()}"
         binding.tvPlayerMoney.text = "Money: ${currentPlayerData.money} M"
+        binding.btnStart.isVisible = currentPlayerData.shouldHost == true && currentRoomData.status == "waiting"
+        binding.btnSkip.isVisible = currentPlayerData.shouldRunning == true
     }
 
     private fun initComponent() {
@@ -132,17 +139,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnSkip.setOnClickListener {
-            var delaySetup = 0L
-            playerAdapter.listPlayer().forEach { _ ->
-                delaySetup += 1000L
-                binding.rvListPlayer.postDelayed(nextPlayerTurn, delaySetup)
-                delaySetup += 1000L
-                binding.rvListPlayer.postDelayed(addAssetCard, delaySetup)
-                delaySetup += 1000L
-                binding.rvListPlayer.postDelayed(addMoneyCard, delaySetup)
-            }
-            delaySetup += 1000L
-            binding.rvListPlayer.postDelayed(nextPlayerTurn, delaySetup)
+//            var delaySetup = 0L
+//            playerAdapter.listPlayer().forEach { _ ->
+//                delaySetup += 1000L
+//                binding.rvListPlayer.postDelayed(nextPlayerTurn, delaySetup)
+//                delaySetup += 1000L
+//                binding.rvListPlayer.postDelayed(addAssetCard, delaySetup)
+//                delaySetup += 1000L
+//                binding.rvListPlayer.postDelayed(addMoneyCard, delaySetup)
+//            }
+//            delaySetup += 1000L
+//            binding.rvListPlayer.postDelayed(nextPlayerTurn, delaySetup)
+            playerAdapter.clearAllPlayer()
+            mainViewModel.nextPlayerTurn(roomName, currentRoomData)
+        }
+
+        binding.btnStart.setOnClickListener {
+            playerAdapter.clearAllPlayer()
+            mainViewModel.shareTheCard(roomName, currentRoomData)
         }
     }
 
@@ -163,7 +177,7 @@ class MainActivity : AppCompatActivity() {
             this, LinearLayoutManager.HORIZONTAL, false
         )
         cardAdapter.onItemClick = { cardData, position ->
-            if (currentPlayerData.isMyTurn) {
+            if (currentPlayerData.shouldRunning == true) {
                 addPlayerCard(cardData, position)
 
                 if (isShowPopupAfterSelectingCard) {
@@ -210,13 +224,13 @@ class MainActivity : AppCompatActivity() {
         currentTurn++
 
         if (currentTurn < playerAdapter.itemCount) {
-            currentPlayerData.isMyTurn = false
+            currentPlayerData.shouldRunning = false
             binding.viewNotMyTurn.isVisible = true
             binding.btnSkip.visibility = View.GONE
         }
         else {
             currentTurn = -1
-            currentPlayerData.isMyTurn = true
+            currentPlayerData.shouldRunning = true
             binding.viewNotMyTurn.isVisible = false
 
             cardAdapter.resetCardStatus()

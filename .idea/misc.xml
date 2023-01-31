@@ -8,6 +8,8 @@
         <entry key="app/src/main/res/drawable/spr_player_turn.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/spr_popup_close.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.337469482421875" />
+        <entry key="app/src/main/res/layout/activity_menu.xml" value="0.33100738525390627" />
+        <entry key="app/src/main/res/layout/activity_room.xml" value="0.1947463768115942" />
         <entry key="app/src/main/res/layout/asset_item.xml" value="0.4629989402881567" />
         <entry key="app/src/main/res/layout/card_item.xml" value="1.0085980055653925" />
         <entry key="app/src/main/res/layout/card_item_asset.xml" value="0.1" />
@@ -17,6 +19,7 @@
         <entry key="app/src/main/res/layout/player_item.xml" value="0.1947463768115942" />
         <entry key="app/src/main/res/layout/player_layout.xml" value="0.1947463768115942" />
         <entry key="app/src/main/res/layout/popup_player.xml" value="0.20792234116706299" />
+        <entry key="app/src/main/res/layout/room_item.xml" value="0.2737226277372263" />
       </map>
     </option>
   </component>

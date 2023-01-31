@@ -7,11 +7,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.example.monopolybuildcard.MainActivity
 import com.example.monopolybuildcard.R
-import com.example.monopolybuildcard.asset.AssetAdapter
 
 /**
  * Adapter for the task list. Has a reference to the [TodoListModel] to send actions back to it.
