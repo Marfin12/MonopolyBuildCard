@@ -60,17 +60,44 @@ open class CardAdapter(
             }
             CardType.ACTION_TYPE -> {
                 holder.cardImage.setImageResource(R.drawable.spr_card_action_deal_breaker)
+                holder.cardActionRentImage.setImageResource(R.drawable.spr_card_action_deal_breaker)
                 holder.assetName.visibility = View.GONE
                 holder.assetPrice.visibility = View.GONE
+
+                if (item.id?.contains("rent") == true) {
+                    holder.cardRentRoot.visibility = View.VISIBLE
+                    holder.cardRoot.visibility = View.GONE
+                    holder.cardActionRentImage.setImageResource(R.drawable.spr_card_action_rent_any)
+
+                    val itemId = item.id ?: ""
+                    val lastCharId = itemId.length
+                    holder.cardActionRentTitle.text = "ASSET ${itemId[lastCharId]}"
+                    holder.cardActionRentDesc.text = "All player pay based on this asset price"
+
+                    if (itemId == RentType.RENT_BLOK_ANY_TYPE) {
+                        holder.cardActionRentTitle.text = "ASSET ?"
+                        holder.cardActionRentDesc.text = "All player pay based on any selected asset price"
+                    }
+                } else {
+                    holder.cardRentRoot.visibility = View.GONE
+                    holder.cardRoot.visibility = View.VISIBLE
+                }
             }
         }
     }
 
     inner class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val cardRoot: View = itemView.findViewById(R.id.layout_parent_card)
         val cardImage: ImageView = itemView.findViewById(R.id.iv_card)
         val assetName: TextView = itemView.findViewById(R.id.tv_card_asset_name)
         val assetPrice: ConstraintLayout = itemView.findViewById(R.id.layout_card_asset_price)
         val cardAdd: ImageView = itemView.findViewById(R.id.iv_add_card)
+
+        val cardRentRoot: View = itemView.findViewById(R.id.layout_parent_action_rent_card)
+        val cardActionRentImage: ImageView = itemView.findViewById(R.id.iv_action_rent_card)
+        val cardActionRentCenterImage: ImageView = itemView.findViewById(R.id.iv_action_rent_center_image)
+        val cardActionRentTitle: TextView = itemView.findViewById(R.id.tv_action_rent_title)
+        val cardActionRentDesc: TextView = itemView.findViewById(R.id.tv_action_rent_desc)
     }
 
     override fun getItemCount() = dataset.size

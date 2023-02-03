@@ -73,46 +73,75 @@ class MenuViewModel : ViewModel() {
                 TODO("Not yet implemented")
             }
         })
-//        var cluster = 4
-//        var asciiValue = 98
-//        val cardListField = HashMap<String, Any>()
-//        for(i in 0..4) {
-//            val money = i+1
-//            val cardName = "m${money}"
-//            val cardData = GlobalCardData(
-//                cardName, CardType.MONEY_TYPE
-//            )
-//            cardListField[i.toString()] = cardData
-//        }
-//        val cardName10 = "m10"
-//        val cardName20 = "m20"
-//        cardListField["5"] = GlobalCardData(
-//            cardName10, CardType.MONEY_TYPE
-//        )
-//        cardListField["6"] = GlobalCardData(
-//            cardName20, CardType.MONEY_TYPE
-//        )
-//        for(i in 7..12) {
-//            val action = i-6
-//            val cardName = "a${action}"
-//            cardListField[i.toString()] = GlobalCardData(
-//                cardName, CardType.ACTION_TYPE
-//            )
-//        }
-//        for(i in 13..23) {
-//            if (cluster > 2) {
-//                cluster = 1
-//                if (asciiValue == 108) asciiValue+=2
-//                else asciiValue++
-//            } else cluster++
-//            val cardName = "${asciiValue.toChar()}${cluster}"
-//            cardListField[i.toString()] = GlobalCardData(
-//                cardName, CardType.ASSET_TYPE
-//            )
-//        }
-//        FirebaseDatabase.getInstance().reference
-//            .child(CARDS)
-//            .updateChildren(cardListField)
+        var cluster = 4
+        var asciiValue = 98
+        val cardListField = HashMap<String, Any>()
+        for(i in 0..4) {
+            val money = i+1
+            val cardName = "m${money}"
+            val cardData = GlobalCardData(
+                cardName, CardType.MONEY_TYPE, money
+            )
+            cardListField[i.toString()] = cardData
+        }
+        val cardName10 = "m10"
+        val cardName20 = "m20"
+        cardListField["5"] = GlobalCardData(
+            cardName10, CardType.MONEY_TYPE, 10
+        )
+        cardListField["6"] = GlobalCardData(
+            cardName20, CardType.MONEY_TYPE, 20
+        )
+        cardListField["8"] = GlobalCardData(
+            "go_pass", CardType.ACTION_TYPE, 2
+        )
+        cardListField["9"] = GlobalCardData(
+            "deal_breaker", CardType.ACTION_TYPE, 5
+        )
+        cardListField["10"] = GlobalCardData(
+            "debt_collector", CardType.ACTION_TYPE, 3
+        )
+        cardListField["11"] = GlobalCardData(
+            "happy_birthday", CardType.ACTION_TYPE, 2
+        )
+        cardListField["12"] = GlobalCardData(
+            "forced_deal", CardType.ACTION_TYPE, 3
+        )
+        cardListField["13"] = GlobalCardData(
+            "sly_deal", CardType.ACTION_TYPE, 3
+        )
+        cardListField["14"] = GlobalCardData(
+            "say_no", CardType.ACTION_TYPE, 3
+        )
+        cardListField["15"] = GlobalCardData(
+            "rent_B", CardType.ACTION_TYPE, 2
+        )
+        cardListField["16"] = GlobalCardData(
+            "rent_C", CardType.ACTION_TYPE, 2
+        )
+        cardListField["17"] = GlobalCardData(
+            "rent_D", CardType.ACTION_TYPE, 2
+        )
+        cardListField["18"] = GlobalCardData(
+            "rent_E", CardType.ACTION_TYPE, 2
+        )
+        cardListField["19"] = GlobalCardData(
+            "rent_any", CardType.ACTION_TYPE, 3
+        )
+        for(i in 20..30) {
+            if (cluster > 2) {
+                cluster = 1
+                if (asciiValue == 108) asciiValue+=2
+                else asciiValue++
+            } else cluster++
+            val cardName = "${asciiValue.toChar()}${cluster}"
+            cardListField[i.toString()] = GlobalCardData(
+                cardName, CardType.ASSET_TYPE
+            )
+        }
+        FirebaseDatabase.getInstance().reference
+            .child(CARDS)
+            .updateChildren(cardListField)
     }
 
     private fun getRandomString(): String {
