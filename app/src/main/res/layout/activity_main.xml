@@ -50,6 +50,15 @@
             android:layout_height="100dp"
             />
 
+        <include
+            android:id="@+id/layout_include_selected_action_card"
+            layout="@layout/card_item"
+            android:layout_marginStart="32dp"
+            android:layout_width="63dp"
+            android:visibility="gone"
+            android:layout_height="100dp"
+            />
+
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <androidx.recyclerview.widget.RecyclerView

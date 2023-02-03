@@ -6,18 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
-import com.example.monopolybuildcard.card.AssetData
-import com.example.monopolybuildcard.card.CardData
 
 /**
  * Adapter for the task list. Has a reference to the [TodoListModel] to send actions back to it.
  */
+@SuppressLint("NotifyDataSetChanged")
 open class MoneyAdapter(
-    private var dataset: MutableList<MoneyData>
+    private var dataset: MutableList<GlobalCardData>
 ): RecyclerView.Adapter<MoneyAdapter.PlayerViewHolder>() {
 
-    var onItemClick: ((MoneyData, Boolean) -> Unit)? = null
+    var onItemClick: ((GlobalCardData, Boolean) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         val adapterLayout = LayoutInflater.from(parent.context)
@@ -28,7 +28,8 @@ open class MoneyAdapter(
 
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
         val item = dataset[position]
-        holder.cardImage.setImageResource(item.image)
+//        item.image?.let { holder.cardImage.setImageResource(it) }
+        holder.cardImage.setImageResource(R.drawable.spr_card_money_1)
     }
 
     inner class PlayerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -37,13 +38,17 @@ open class MoneyAdapter(
 
     override fun getItemCount() = dataset.size
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun addMoneyCard(cardData: CardData) {
-        dataset.add(MoneyData(cardData.image))
+    fun addMoneyCard(cardData: GlobalCardData) {
+        dataset.add(cardData)
         notifyDataSetChanged()
     }
 
-    fun replaceListMoneyCard(listMoneyData: MutableList<MoneyData>) {
+    fun replaceListMoneyCard(listMoneyData: MutableList<GlobalCardData>) {
         dataset = listMoneyData
+        notifyDataSetChanged()
+    }
+
+    fun listMoney(): MutableList<GlobalCardData> {
+        return dataset
     }
 }

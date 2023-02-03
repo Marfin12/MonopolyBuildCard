@@ -65,7 +65,7 @@ class RoomViewModel : ViewModel() {
                         .child(Constant.RoomFields.USERS)
                         .child(updatedPlayerIndex.toString())
                         .updateChildren(playerFields, completionListener)
-                    FirebaseDatabase.getInstance().reference.removeEventListener(this)
+                    FirebaseDatabase.getInstance().reference.child(ROOMS).removeEventListener(this)
                     onceJoined = false
                 }
             }
@@ -79,15 +79,5 @@ class RoomViewModel : ViewModel() {
             .child(ROOMS)
             .child(roomName)
             .child(Constant.RoomFields.USERS).addValueEventListener(roomEventListener as ValueEventListener)
-    }
-
-    override fun onCleared() {
-        if (completionListener != null) {
-            FirebaseDatabase.getInstance().reference.removeValue(completionListener)
-        }
-        if (roomEventListener != null) {
-            FirebaseDatabase.getInstance().reference.removeEventListener(roomEventListener!!)
-        }
-        super.onCleared()
     }
 }

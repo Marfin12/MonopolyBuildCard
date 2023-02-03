@@ -9,5 +9,5 @@ import kotlinx.parcelize.Parcelize
 data class CardData(
     val image: Int,
     val type: String,
-    var isAbleToAdd: Boolean = true
+    var stepType: String
 ) : Parcelable

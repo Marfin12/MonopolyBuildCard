@@ -8,16 +8,22 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
 
 /**
  * Adapter for the task list. Has a reference to the [TodoListModel] to send actions back to it.
  */
+@SuppressLint("NotifyDataSetChanged")
 open class CardAdapter(
-    private val dataset: MutableList<CardData>
+    private val dataset: MutableList<GlobalCardData>
 ): RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
-    var onItemClick: ((CardData, Int) -> Unit)? = null
+    var onCardAdded: ((GlobalCardData, Int) -> Unit)? = null
+    var onCardDiscard: ((GlobalCardData, Int) -> Unit)? = null
+
+    var actions = mutableListOf<GlobalCardData>()
+    var isDiscard = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
         val adapterLayout = LayoutInflater.from(parent.context)
@@ -29,17 +35,34 @@ open class CardAdapter(
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
         val item = dataset[position]
 
-        holder.cardImage.setImageResource(item.image)
-        holder.cardAdd.visibility = if (item.isAbleToAdd) View.VISIBLE
-        else View.INVISIBLE
+        holder.cardAdd.visibility = if (actions.any { it.type == item.type }) View.INVISIBLE
+        else View.VISIBLE
+
+        if (isDiscard) holder.cardAdd.setImageResource(R.drawable.spr_card_discard)
+        else holder.cardAdd.setImageResource(R.drawable.spr_card_add)
 
         holder.cardImage.setOnClickListener {
-            if (item.isAbleToAdd) onItemClick?.invoke(item, position)
+            if (isDiscard) onCardDiscard?.invoke(item, position)
+            else if (!actions.any { it.type == item.type }) onCardAdded?.invoke(item, position)
         }
 
-        if (item.image == R.drawable.spr_card_asset_brown_apartement) {
-            holder.assetName.visibility = View.VISIBLE
-            holder.assetPrice.visibility = View.VISIBLE
+        when (item.type) {
+            CardType.ASSET_TYPE -> {
+                holder.cardImage.setImageResource(R.drawable.spr_card_asset_brown_apartement)
+                holder.assetName.visibility = View.VISIBLE
+                holder.assetPrice.visibility = View.VISIBLE
+                holder.assetName.text = "Blok ${item.id?.uppercase()}"
+            }
+            CardType.MONEY_TYPE -> {
+                holder.cardImage.setImageResource(R.drawable.spr_card_money_1)
+                holder.assetName.visibility = View.GONE
+                holder.assetPrice.visibility = View.GONE
+            }
+            CardType.ACTION_TYPE -> {
+                holder.cardImage.setImageResource(R.drawable.spr_card_action_deal_breaker)
+                holder.assetName.visibility = View.GONE
+                holder.assetPrice.visibility = View.GONE
+            }
         }
     }
 
@@ -52,25 +75,47 @@ open class CardAdapter(
 
     override fun getItemCount() = dataset.size
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun removeCard(whichCard: Int, whichType: String) {
+    fun getCard(byIndex: Int): GlobalCardData {
+        return dataset[byIndex]
+    }
+
+    fun removeCard(whichCard: Int) {
         dataset.removeAt(whichCard)
-        removePlusButton(whichType)
+        notifyDataSetChanged()
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    fun discardCardMode() {
+        isDiscard = true
+        notifyDataSetChanged()
+    }
+
+    fun undoDiscardMode() {
+        isDiscard = false
+        notifyDataSetChanged()
+    }
+
     fun resetCardStatus() {
-        dataset.forEach {
-            it.isAbleToAdd = true
-        }
+        actions.clear()
         notifyDataSetChanged()
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun removePlusButton(forCardType: String) {
-        dataset.filter { cardData ->  cardData.type == forCardType }.forEach {
-            it.isAbleToAdd = false
-        }
+    fun addCard(cardData: MutableList<GlobalCardData>) {
+        dataset.addAll(cardData)
         notifyDataSetChanged()
+    }
+
+    fun replaceCard(cardData: MutableList<GlobalCardData>) {
+        dataset.clear()
+        dataset.addAll(cardData)
+        notifyDataSetChanged()
+    }
+
+    fun replaceActionPostedCard(actionCards: MutableList<GlobalCardData>) {
+        this.actions = actionCards
+        notifyDataSetChanged()
+    }
+
+    fun listCard(): MutableList<GlobalCardData> {
+        return dataset
     }
 }

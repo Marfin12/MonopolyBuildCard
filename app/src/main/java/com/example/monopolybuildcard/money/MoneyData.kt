@@ -7,5 +7,5 @@ import kotlinx.parcelize.Parcelize
 @Keep
 @Parcelize
 data class MoneyData(
-    val image: Int
+    val image: Int? = -1
 ) : Parcelable

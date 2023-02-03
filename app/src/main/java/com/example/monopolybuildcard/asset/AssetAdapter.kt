@@ -1,27 +1,27 @@
 package com.example.monopolybuildcard.asset
 
 import android.annotation.SuppressLint
-import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
-import com.example.monopolybuildcard.card.AssetData
-import com.example.monopolybuildcard.card.CardData
+import org.w3c.dom.Text
 
 /**
  * Adapter for the task list. Has a reference to the [TodoListModel] to send actions back to it.
  */
+@SuppressLint("NotifyDataSetChanged")
 open class AssetAdapter(
-    private var dataset: MutableList<AssetData>
+    private var dataset: MutableList<GlobalCardData>
 ): RecyclerView.Adapter<AssetAdapter.AssetViewHolder>() {
 
     var onItemClick: ((AssetData, Boolean) -> Unit)? = null
+    private var assetHasBeenPosted = ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AssetViewHolder {
         val adapterLayout = LayoutInflater.from(parent.context)
@@ -40,12 +40,10 @@ open class AssetAdapter(
         private val assetImage2: View = itemView.findViewById(R.id.inc_asset2)
         private val assetImage3: View = itemView.findViewById(R.id.inc_asset3)
 
-        fun setImageSource(
-            cardItem: AssetData
-        ) {
-            assetImage1.findViewById<ImageView>(R.id.iv_card).setImageResource(cardItem.image)
-            assetImage2.findViewById<ImageView>(R.id.iv_card).setImageResource(cardItem.image)
-            assetImage3.findViewById<ImageView>(R.id.iv_card).setImageResource(cardItem.image)
+        fun setImageSource(cardItem: GlobalCardData) {
+            assetImage1.findViewById<ImageView>(R.id.iv_card).setImageResource(R.drawable.spr_card_asset_brown_apartement)
+            assetImage2.findViewById<ImageView>(R.id.iv_card).setImageResource(R.drawable.spr_card_asset_brown_apartement)
+            assetImage3.findViewById<ImageView>(R.id.iv_card).setImageResource(R.drawable.spr_card_asset_brown_apartement)
 
             assetImage1.findViewById<TextView>(R.id.tv_card_asset_name).visibility = View.VISIBLE
             assetImage2.findViewById<TextView>(R.id.tv_card_asset_name).visibility = View.VISIBLE
@@ -55,21 +53,37 @@ open class AssetAdapter(
             assetImage2.findViewById<ConstraintLayout>(R.id.layout_card_asset_price).visibility = View.VISIBLE
             assetImage3.findViewById<ConstraintLayout>(R.id.layout_card_asset_price).visibility = View.VISIBLE
 
-            when (cardItem.level) {
-                1 -> {
-                    assetImage1.visibility = View.VISIBLE
-                    assetImage2.visibility = View.GONE
-                    assetImage3.visibility = View.GONE
-                }
-                2 -> {
-                    assetImage1.visibility = View.VISIBLE
-                    assetImage2.visibility = View.VISIBLE
-                    assetImage3.visibility = View.GONE
-                }
-                3 -> {
-                    assetImage1.visibility = View.VISIBLE
-                    assetImage2.visibility = View.VISIBLE
-                    assetImage3.visibility = View.VISIBLE
+            assetImage1.visibility = View.GONE
+            assetImage2.visibility = View.GONE
+            assetImage3.visibility = View.GONE
+
+            val charAsset = cardItem.id?.get(0) ?: ' '
+            if (!assetHasBeenPosted.contains(charAsset) && charAsset != ' ') {
+                assetHasBeenPosted += charAsset
+
+                assetImage1.findViewById<TextView>(R.id.tv_card_asset_name).text =
+                    "Blok ${cardItem.id?.uppercase()}"
+                assetImage2.findViewById<TextView>(R.id.tv_card_asset_name).text =
+                    "Blok ${cardItem.id?.uppercase()}"
+                assetImage3.findViewById<TextView>(R.id.tv_card_asset_name).text =
+                    "Blok ${cardItem.id?.uppercase()}"
+
+                when (dataset.count { it.id?.get(0) == charAsset }) {
+                    1 -> {
+                        assetImage1.visibility = View.VISIBLE
+                        assetImage2.visibility = View.GONE
+                        assetImage3.visibility = View.GONE
+                    }
+                    2 -> {
+                        assetImage1.visibility = View.VISIBLE
+                        assetImage2.visibility = View.VISIBLE
+                        assetImage3.visibility = View.GONE
+                    }
+                    3 -> {
+                        assetImage1.visibility = View.VISIBLE
+                        assetImage2.visibility = View.VISIBLE
+                        assetImage3.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -77,30 +91,13 @@ open class AssetAdapter(
 
     override fun getItemCount() = dataset.size
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun addAssetCard(cardData: CardData) {
-        val sameAssetIndex = dataset.indexOfFirst { assetCard ->
-            assetCard.image == cardData.image
-        }
-
-        if (sameAssetIndex < 0) {
-            dataset.add(
-                AssetData(
-                    cardData.image,
-                    1
-                )
-            )
-        } else {
-            val assetLevel = dataset[sameAssetIndex].level
-            dataset[sameAssetIndex] = AssetData(
-                cardData.image, assetLevel + 1
-            )
-        }
-
+    fun replaceListAssetCard(listAssetData: MutableList<GlobalCardData>) {
+        dataset = listAssetData
+        assetHasBeenPosted = ""
         notifyDataSetChanged()
     }
 
-    fun replaceListAssetCard(listAssetData: MutableList<AssetData>) {
-        dataset = listAssetData
+    fun listAsset(): MutableList<GlobalCardData> {
+        return dataset
     }
 }

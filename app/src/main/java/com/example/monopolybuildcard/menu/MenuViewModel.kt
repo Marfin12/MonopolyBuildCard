@@ -11,6 +11,7 @@ import com.example.monopolybuildcard.Constant.RoomFields
 import com.example.monopolybuildcard.Constant.RoomFields.PlayerFields
 import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.Util
+import com.example.monopolybuildcard.card.CardType
 import com.google.firebase.database.*
 
 
@@ -39,7 +40,7 @@ class MenuViewModel : ViewModel() {
         playerFields[PlayerFields.NAME] = MODEL
 
         playerListField["0"] = playerFields
-        cardListField["ready"] = cardOnDeck
+        cardListField["ready"] = cardOnDeck.shuffled()
 
         roomFields[RoomFields.CARDS] = cardListField
         roomFields[RoomFields.MAX_PLAYER] = 2
@@ -79,34 +80,34 @@ class MenuViewModel : ViewModel() {
 //            val money = i+1
 //            val cardName = "m${money}"
 //            val cardData = GlobalCardData(
-//                cardName, "money"
+//                cardName, CardType.MONEY_TYPE
 //            )
 //            cardListField[i.toString()] = cardData
 //        }
 //        val cardName10 = "m10"
 //        val cardName20 = "m20"
 //        cardListField["5"] = GlobalCardData(
-//            cardName10, "money"
+//            cardName10, CardType.MONEY_TYPE
 //        )
 //        cardListField["6"] = GlobalCardData(
-//            cardName20, "money"
+//            cardName20, CardType.MONEY_TYPE
 //        )
 //        for(i in 7..12) {
 //            val action = i-6
 //            val cardName = "a${action}"
 //            cardListField[i.toString()] = GlobalCardData(
-//                cardName, "action"
+//                cardName, CardType.ACTION_TYPE
 //            )
 //        }
-//        for(i in 13..99) {
-//            if (cluster > 3) {
+//        for(i in 13..23) {
+//            if (cluster > 2) {
 //                cluster = 1
 //                if (asciiValue == 108) asciiValue+=2
 //                else asciiValue++
 //            } else cluster++
 //            val cardName = "${asciiValue.toChar()}${cluster}"
 //            cardListField[i.toString()] = GlobalCardData(
-//                cardName, "asset"
+//                cardName, CardType.ASSET_TYPE
 //            )
 //        }
 //        FirebaseDatabase.getInstance().reference
@@ -119,14 +120,5 @@ class MenuViewModel : ViewModel() {
         return (1..roomNameLength)
             .map { allowedChars.random() }.shuffled()
             .joinToString("")
-    }
-
-
-    override fun onCleared() {
-        if (completionListener != null) {
-            FirebaseDatabase.getInstance().reference.removeValue(completionListener)
-        }
-
-        super.onCleared()
     }
 }

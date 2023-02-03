@@ -8,7 +8,7 @@ import java.util.*
 @Keep
 object Constant {
     const val ROOMS = "rooms"
-    const val CARDS = "cards"
+    const val CARDS = "cardsAndroid"
     object RoomFields {
         const val CARDS = "cards"
         const val MAX_PLAYER = "maxPlayer"

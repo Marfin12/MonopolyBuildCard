@@ -21,9 +21,8 @@
             android:id="@+id/rv_list_asset"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -31,8 +30,7 @@
             android:id="@+id/rv_list_money"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:clipToPadding="false"
             app:layout_constraintStart_toStartOf="parent"
@@ -72,7 +70,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_dont_show_this_again">
 
                 <Button
-                    android:id="@+id/btn_popup_yes"
+                    android:id="@+id/btn_popup_not_keep_show"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
@@ -80,7 +78,7 @@
                     android:textSize="10dp" />
 
                 <Button
-                    android:id="@+id/btn_popup_no"
+                    android:id="@+id/btn_popup_keep_show"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
@@ -88,7 +86,7 @@
                     android:backgroundTint="@color/teal_700"
                     android:text="Keep Show Popup"
                     android:textSize="10dp"
-                    app:layout_constraintStart_toEndOf="@id/btn_popup_yes"
+                    app:layout_constraintStart_toEndOf="@id/btn_popup_not_keep_show"
                     app:layout_constraintTop_toBottomOf="@id/tv_dont_show_this_again" />
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,6 +14,7 @@ import com.example.monopolybuildcard.R
 /**
  * Adapter for the task list. Has a reference to the [TodoListModel] to send actions back to it.
  */
+@SuppressLint("NotifyDataSetChanged")
 open class PlayerAdapter(
     private val dataset: MutableList<PlayerData>
 ): RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
@@ -50,7 +51,6 @@ open class PlayerAdapter(
 
     override fun getItemCount() = dataset.size
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setPlayerTurn(whichPlayer: Int) {
         dataset.forEachIndexed { index, playerData ->
             playerData.shouldRunning = index == whichPlayer
@@ -62,13 +62,11 @@ open class PlayerAdapter(
         return dataset
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun addPlayer(playerData: PlayerData) {
         dataset.add(playerData)
         notifyDataSetChanged()
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun clearAllPlayer() {
         dataset.clear()
         notifyDataSetChanged()
