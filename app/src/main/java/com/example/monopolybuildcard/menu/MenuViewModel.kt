@@ -58,21 +58,21 @@ class MenuViewModel : ViewModel() {
     }
 
     fun initCardsFromFirebase() {
-        val cardsReference = FirebaseDatabase.getInstance().reference.child(CARDS)
-
-        cardsReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                snapshot.children.forEach { playerData ->
-                    playerData.getValue(GlobalCardData::class.java)?.let {
-                        cardOnDeck.add(it)
-                    }
-                }
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-        })
+//        val cardsReference = FirebaseDatabase.getInstance().reference.child(CARDS)
+//
+//        cardsReference.addListenerForSingleValueEvent(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                snapshot.children.forEach { playerData ->
+//                    playerData.getValue(GlobalCardData::class.java)?.let {
+//                        cardOnDeck.add(it)
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(p0: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//        })
         var cluster = 4
         var asciiValue = 98
         val cardListField = HashMap<String, Any>()
@@ -80,63 +80,65 @@ class MenuViewModel : ViewModel() {
             val money = i+1
             val cardName = "m${money}"
             val cardData = GlobalCardData(
-                cardName, CardType.MONEY_TYPE, money
+                cardName, money, CardType.MONEY_TYPE, money
             )
             cardListField[i.toString()] = cardData
         }
         val cardName10 = "m10"
         val cardName20 = "m20"
         cardListField["5"] = GlobalCardData(
-            cardName10, CardType.MONEY_TYPE, 10
+            cardName10, 10, CardType.MONEY_TYPE, 10
         )
         cardListField["6"] = GlobalCardData(
-            cardName20, CardType.MONEY_TYPE, 20
+            cardName20, 20, CardType.MONEY_TYPE, 20
+        )
+        cardListField["7"] = GlobalCardData(
+            "go_pass", 0, CardType.ACTION_TYPE, 2
         )
         cardListField["8"] = GlobalCardData(
-            "go_pass", CardType.ACTION_TYPE, 2
+            "deal_breaker", 0, CardType.ACTION_TYPE, 5
         )
         cardListField["9"] = GlobalCardData(
-            "deal_breaker", CardType.ACTION_TYPE, 5
+            "sly_deal", 0, CardType.ACTION_TYPE, 3
         )
         cardListField["10"] = GlobalCardData(
-            "debt_collector", CardType.ACTION_TYPE, 3
+            "forced_deal", 0, CardType.ACTION_TYPE, 2
         )
-        cardListField["11"] = GlobalCardData(
-            "happy_birthday", CardType.ACTION_TYPE, 2
-        )
-        cardListField["12"] = GlobalCardData(
-            "forced_deal", CardType.ACTION_TYPE, 3
-        )
-        cardListField["13"] = GlobalCardData(
-            "sly_deal", CardType.ACTION_TYPE, 3
-        )
-        cardListField["14"] = GlobalCardData(
-            "say_no", CardType.ACTION_TYPE, 3
-        )
-        cardListField["15"] = GlobalCardData(
-            "rent_B", CardType.ACTION_TYPE, 2
-        )
-        cardListField["16"] = GlobalCardData(
-            "rent_C", CardType.ACTION_TYPE, 2
-        )
-        cardListField["17"] = GlobalCardData(
-            "rent_D", CardType.ACTION_TYPE, 2
-        )
-        cardListField["18"] = GlobalCardData(
-            "rent_E", CardType.ACTION_TYPE, 2
-        )
-        cardListField["19"] = GlobalCardData(
-            "rent_any", CardType.ACTION_TYPE, 3
-        )
-        for(i in 20..30) {
+//        cardListField["11"] = GlobalCardData(
+//            "debt_collector", CardType.ACTION_TYPE, 3
+//        )
+//        cardListField["12"] = GlobalCardData(
+//            "happy_birthday", CardType.ACTION_TYPE, 3
+//        )
+//        cardListField["13"] = GlobalCardData(
+//            "say_no", CardType.ACTION_TYPE, 3
+//        )
+//        cardListField["14"] = GlobalCardData(
+//            "rent_B", CardType.ACTION_TYPE, 2
+//        )
+//        cardListField["15"] = GlobalCardData(
+//            "rent_C", CardType.ACTION_TYPE, 2
+//        )
+//        cardListField["16"] = GlobalCardData(
+//            "rent_D", CardType.ACTION_TYPE, 2
+//        )
+//        cardListField["17"] = GlobalCardData(
+//            "rent_E", CardType.ACTION_TYPE, 2
+//        )
+//        cardListField["18"] = GlobalCardData(
+//            "rent_any", CardType.ACTION_TYPE, 3
+//        )
+        var price = 1
+        for(i in 11..21) {
             if (cluster > 2) {
                 cluster = 1
                 if (asciiValue == 108) asciiValue+=2
                 else asciiValue++
+                price++
             } else cluster++
-            val cardName = "${asciiValue.toChar()}${cluster}"
+            val cardName = "${asciiValue.toChar()}"
             cardListField[i.toString()] = GlobalCardData(
-                cardName, CardType.ASSET_TYPE
+                cardName, cluster, CardType.PROPERTY_TYPE, price
             )
         }
         FirebaseDatabase.getInstance().reference

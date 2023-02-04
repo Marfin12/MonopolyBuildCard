@@ -33,4 +33,12 @@ object Util {
             curRoomData.users
         )
     }
+
+    fun drawCard(roomData: RoomData, currentPlayerIndex: Int) {
+        val totalReadyCards = roomData.cards?.ready?.size ?: 0
+        if (totalReadyCards > 0) {
+            val sharedCard = roomData.cards?.ready?.removeAt(0) ?: GlobalCardData()
+            roomData.users?.get(currentPlayerIndex)?.cards?.add(sharedCard)
+        }
+    }
 }

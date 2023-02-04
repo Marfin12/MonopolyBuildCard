@@ -20,7 +20,7 @@ open class AssetAdapter(
     private var dataset: MutableList<GlobalCardData>
 ): RecyclerView.Adapter<AssetAdapter.AssetViewHolder>() {
 
-    var onItemClick: ((AssetData, Boolean) -> Unit)? = null
+    var onItemClick: ((GlobalCardData) -> Unit)? = null
     private var assetHasBeenPosted = ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AssetViewHolder {
@@ -33,12 +33,22 @@ open class AssetAdapter(
     override fun onBindViewHolder(holder: AssetViewHolder, position: Int) {
         val item = dataset[position]
         holder.setImageSource(item)
+        holder.setOnClickAssetImage(item, onItemClick)
     }
 
     inner class AssetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val assetImage1: View = itemView.findViewById(R.id.inc_asset1)
         private val assetImage2: View = itemView.findViewById(R.id.inc_asset2)
         private val assetImage3: View = itemView.findViewById(R.id.inc_asset3)
+
+        fun setOnClickAssetImage(
+            cardItem: GlobalCardData,
+            onItemClick: ((GlobalCardData) -> Unit)?
+        ) {
+            assetImage1.setOnClickListener { onItemClick?.invoke(cardItem) }
+            assetImage2.setOnClickListener { onItemClick?.invoke(cardItem) }
+            assetImage3.setOnClickListener { onItemClick?.invoke(cardItem) }
+        }
 
         fun setImageSource(cardItem: GlobalCardData) {
             assetImage1.findViewById<ImageView>(R.id.iv_card).setImageResource(R.drawable.spr_card_asset_brown_apartement)

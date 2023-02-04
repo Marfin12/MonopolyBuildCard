@@ -19,7 +19,8 @@ open class PlayerAdapter(
     private val dataset: MutableList<PlayerData>
 ): RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
 
-    var onItemInfoClick: ((PlayerData) -> Unit)? = null
+    var onItemInfoClick: ((PlayerData, Int) -> Unit)? = null
+    var onPlayerViewClick: ((PlayerData, Int) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         val adapterLayout = LayoutInflater.from(parent.context)
@@ -32,12 +33,15 @@ open class PlayerAdapter(
         val item = dataset[position]
 
         holder.playerName.text = item.name
-        holder.playerMoney.text = "${item.money} M"
-        holder.playerAsset.text = item.asset.toString()
+//        holder.playerMoney.text = "${item.money} M"
+//        holder.playerAsset.text = item.properties.toString()
         holder.playerTurnOutline.isVisible = item.shouldRunning == true
 
         holder.playerInfo.setOnClickListener {
-            onItemInfoClick?.invoke(item)
+            onItemInfoClick?.invoke(item, position)
+        }
+        holder.playerView.setOnClickListener {
+            onPlayerViewClick?.invoke(item, position)
         }
     }
 
@@ -47,6 +51,7 @@ open class PlayerAdapter(
         val playerAsset: TextView = itemView.findViewById(R.id.tv_enemy_asset)
         val playerInfo: ImageView = itemView.findViewById(R.id.iv_enemy_info)
         val playerTurnOutline: View = itemView.findViewById(R.id.view_enemy_square)
+        val playerView: View = itemView.findViewById(R.id.view_enemy_parent)
     }
 
     override fun getItemCount() = dataset.size

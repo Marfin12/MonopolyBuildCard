@@ -5,6 +5,6 @@ import androidx.annotation.Keep
 @Keep
 object CardType {
     const val MONEY_TYPE = "money"
-    const val ASSET_TYPE = "property"
+    const val PROPERTY_TYPE = "property"
     const val ACTION_TYPE = "action"
 }

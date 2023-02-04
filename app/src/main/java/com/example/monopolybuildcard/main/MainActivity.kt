@@ -7,7 +7,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.CompoundButton
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -15,9 +14,11 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.monopolybuildcard.GlobalCardData
+import com.example.monopolybuildcard.GlobalForceActionData
 import com.example.monopolybuildcard.R
 import com.example.monopolybuildcard.Util
 import com.example.monopolybuildcard.asset.AssetAdapter
+import com.example.monopolybuildcard.card.ActionType
 import com.example.monopolybuildcard.card.CardAdapter
 import com.example.monopolybuildcard.card.CardType
 import com.example.monopolybuildcard.databinding.ActivityMainBinding
@@ -47,8 +48,10 @@ class MainActivity : AppCompatActivity() {
     private var currentPlayerData = PlayerData()
     private var currentRoomData = RoomData()
     private var currentPlayerIndex = -1
-    private val playerAdapter: PlayerAdapter = PlayerAdapter(mutableListOf())
 
+    private var selectedOtherPlayerIndex = -1
+
+    private val playerAdapter: PlayerAdapter = PlayerAdapter(mutableListOf())
     private val cardAdapter: CardAdapter = CardAdapter(mutableListOf())
     private val moneyAdapter: MoneyAdapter = MoneyAdapter(mutableListOf())
     private val assetAdapter: AssetAdapter = AssetAdapter(mutableListOf())
@@ -77,7 +80,11 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.roomDataData.observe(this) { roomData ->
             currentRoomData = roomData
             if (roomData.status != "waiting") playerAdapter.clearAllPlayer()
-            roomData.actions?.let { cardAdapter.replaceActionPostedCard(it) }
+            roomData.actions?.let {
+                cardAdapter.replaceActionPostedCard(it)
+                if (it.last().card?.id == ActionType.SLY_DEAL && currentPlayerData.shouldRunning == true)
+                    resetComponent()
+            }
             roomData.users?.forEachIndexed { index, playerData ->
                 if (playerData.id == Util.getAndroidId(this@MainActivity)) {
                     currentPlayerData = playerData
@@ -97,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                 hideEnemyPostedCard()
             }
 
-            if (currentPlayerData.listAsset.size > 0 && currentPlayerData.listMoney.size > 0) {
+            if (currentPlayerData.properties.size > 0 && currentPlayerData.money.size > 0) {
                 binding.layoutIncludePopupPlayer.layoutFloatCheckGroup.updateLayoutParams<ConstraintLayout.LayoutParams> {
                     endToEnd = (binding.layoutIncludePopupPlayer.layoutFloatCheckGroup.parent as View).id
                     topToBottom = binding.layoutIncludePopupPlayer.rvListMoney.id
@@ -121,8 +128,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun initPlayer() {
         binding.tvPlayerName.text = currentPlayerData.name
-        binding.tvPlayerAsset.text = "Asset: ${currentPlayerData.asset.toString()}"
-        binding.tvPlayerMoney.text = "Money: ${currentPlayerData.money} M"
+//        binding.tvPlayerAsset.text = "Asset: ${currentPlayerData.asset.toString()}"
+//        binding.tvPlayerMoney.text = "Money: ${currentPlayerData.money} M"
         binding.btnStart.isVisible =
             currentPlayerData.shouldHost == true && currentRoomData.status == "waiting"
         binding.btnSkip.isVisible = currentPlayerData.shouldRunning == true
@@ -139,8 +146,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.layoutIncludePopupPlayer.ivPopupClose.setOnClickListener {
-            autoChooseForPopupShowing()
-            binding.layoutIncludePopupPlayer.root.visibility = View.GONE
+            onCloseButtonPopupClick()
         }
 
         binding.layoutIncludePopupPlayer.btnPopupNotKeepShow.setOnClickListener {
@@ -171,13 +177,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun resetComponent() {
+        assetAdapter.onItemClick = null
+        binding.rvListCard.visibility = View.VISIBLE
+        binding.btnSkip.text = "Skip"
+
+        initComponent()
+    }
+
     private fun initAdapter() {
         binding.rvListPlayer.adapter = playerAdapter
         binding.rvListPlayer.layoutManager = LinearLayoutManager(
             this, LinearLayoutManager.HORIZONTAL, false
         )
-        playerAdapter.onItemInfoClick = { playerData ->
+        playerAdapter.onItemInfoClick = { playerData, position ->
             showSelectedPlayerAssetMoneyInfo(playerData)
+            selectedOtherPlayerIndex = position
         }
 
         binding.rvListCard.adapter = cardAdapter
@@ -228,20 +243,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addPlayerCard(cardData: GlobalCardData, position: Int) {
+        var isNotWaitingFromPlayerAction = true
         when (cardData.type) {
-            CardType.ASSET_TYPE -> {
-                currentPlayerData.listAsset.add(cardData)
+            CardType.PROPERTY_TYPE -> {
+                currentPlayerData.properties.add(cardData)
             }
             CardType.MONEY_TYPE -> {
-                currentPlayerData.listMoney.add(cardData)
+                currentPlayerData.money.add(cardData)
+            }
+            CardType.ACTION_TYPE -> {
+                isNotWaitingFromPlayerAction = false
+                when(cardData.id) {
+                    ActionType.PASS_GO -> {
+                        isNotWaitingFromPlayerAction = true
+                        Util.drawCard(currentRoomData, currentPlayerIndex)
+                        Util.drawCard(currentRoomData, currentPlayerIndex)
+                    }
+                    ActionType.SLY_DEAL -> slyDealAction(position)
+                    ActionType.DEAL_BREAKER -> dealBreakerAction(position)
+                    ActionType.FORCE_DEAL -> forceDealAction(position)
+
+                }
             }
         }
-        cardAdapter.removeCard(position)
 
-        currentPlayerData.cards = cardAdapter.listCard()
-        currentRoomData.users?.set(currentPlayerIndex, currentPlayerData)
-
-        mainViewModel.postACard(roomName, currentRoomData, cardData)
+        if (isNotWaitingFromPlayerAction) postCardToServer(cardData, position)
     }
 
     private fun discardPlayerCard(position: Int) {
@@ -257,8 +283,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSelectedPlayerAssetMoneyInfo(playerData: PlayerData) {
-        assetAdapter.replaceListAssetCard(playerData.listAsset)
-        moneyAdapter.replaceListMoneyCard(playerData.listMoney)
+        assetAdapter.replaceListAssetCard(playerData.properties)
+        moneyAdapter.replaceListMoneyCard(playerData.money)
 
         binding.layoutIncludePopupPlayer.root.visibility = View.VISIBLE
     }
@@ -269,12 +295,12 @@ class MainActivity : AppCompatActivity() {
         binding.layoutIncludeSelectedActionCard.ivCard.setImageResource(R.drawable.spr_card_action_deal_breaker)
 
         currentRoomData.actions?.forEach {
-            when (it.type) {
+            when (it.card?.type) {
                 CardType.MONEY_TYPE -> binding.layoutIncludeSelectedMoneyCard.root.isVisible =
                     true
-                CardType.ASSET_TYPE -> {
+                CardType.PROPERTY_TYPE -> {
                     binding.layoutIncludeSelectedAssetCard.root.isVisible = true
-                    binding.layoutIncludeSelectedAssetCard.tvCardAssetName.text = "Blok ${it.id}"
+                    binding.layoutIncludeSelectedAssetCard.tvCardAssetName.text = "Blok ${it.card?.id}"
                 }
                 CardType.ACTION_TYPE -> binding.layoutIncludeSelectedActionCard.root.isVisible =
                     true
@@ -304,10 +330,14 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.nextPlayerTurn(roomName, updatedRoomData)
     }
 
+    private fun onCloseButtonPopupClick() {
+        autoChooseForPopupShowing()
+        selectedOtherPlayerIndex = -1
+        binding.layoutIncludePopupPlayer.root.visibility = View.GONE
+    }
+
     private fun autoChooseForPopupShowing() {
-        if (isPopupNeverShownAfterSelectingCard) {
-            keepPopupShowing()
-        }
+        if (isPopupNeverShownAfterSelectingCard) keepPopupShowing()
     }
 
     private fun keepPopupShowing() {
@@ -326,5 +356,80 @@ class MainActivity : AppCompatActivity() {
         binding.layoutIncludePopupPlayer.root.visibility = View.GONE
 
         adjustVisibilityPopupButtonGroup()
+    }
+
+    private fun postCardToServer(cardData: GlobalCardData, position: Int) {
+        cardAdapter.removeCard(position)
+
+        currentPlayerData.cards = cardAdapter.listCard()
+        currentRoomData.users?.set(currentPlayerIndex, currentPlayerData)
+
+        mainViewModel.postACard(roomName, currentRoomData, cardData, currentPlayerData.id)
+    }
+
+    private fun slyDealAction(position: Int) {
+        prepareAssetAction()
+        assetAdapter.onItemClick = { cardData ->
+            if (selectedOtherPlayerIndex != currentPlayerIndex) {
+                currentRoomData.users?.get(selectedOtherPlayerIndex)?.properties?.remove(cardData)
+                postCardToServer(cardData, position)
+            }
+        }
+    }
+
+    private fun forceDealAction(position: Int) {
+        prepareAssetAction()
+        var playerCard: GlobalForceActionData? = null
+        var enemyCard: GlobalForceActionData? = null
+        assetAdapter.onItemClick = { cardData ->
+            val isFullProperty = assetAdapter.listAsset().count{ it.id == cardData.id } >= 3
+            if (!isFullProperty) {
+                if (selectedOtherPlayerIndex == currentPlayerIndex) {
+                    playerCard = GlobalForceActionData(cardData, selectedOtherPlayerIndex)
+                } else {
+                    enemyCard = GlobalForceActionData(cardData, selectedOtherPlayerIndex)
+                }
+            }
+
+            if ((playerCard != null) && (enemyCard != null)) {
+                val enemyId = enemyCard?.ownerId ?: -1
+                val playerId = playerCard?.ownerId ?: -1
+                val enemyCardProperty = enemyCard?.card
+                val playerCardProperty = playerCard?.card
+
+                currentRoomData.users?.get(enemyId)?.properties?.remove(enemyCardProperty)
+                currentRoomData.users?.get(enemyId)?.properties?.add(playerCardProperty!!)
+
+                currentRoomData.users?.get(playerId)?.properties?.remove(playerCardProperty)
+                currentRoomData.users?.get(playerId)?.properties?.add(enemyCardProperty!!)
+
+                postCardToServer(cardData, position)
+            }
+        }
+    }
+
+    private fun dealBreakerAction(position: Int) {
+        prepareAssetAction()
+        assetAdapter.onItemClick = { cardData ->
+            val listProperties = currentRoomData.users?.get(selectedOtherPlayerIndex)?.properties
+            val charAsset = cardData.id?.get(0) ?: ' '
+            val totalAsset = listProperties?.count { it.id?.get(0) == charAsset } ?: -1
+
+            if (totalAsset >= 3 && selectedOtherPlayerIndex != currentPlayerIndex) {
+                currentRoomData.users?.get(selectedOtherPlayerIndex)?.properties?.filter {
+                    it.id?.get(0) != charAsset
+                }
+                postCardToServer(cardData, position)
+            }
+        }
+    }
+
+    private fun prepareAssetAction() {
+        binding.rvListCard.visibility = View.GONE
+        binding.btnSkip.text = "Cancel"
+
+        binding.btnSkip.setOnClickListener {
+            resetComponent()
+        }
     }
 }

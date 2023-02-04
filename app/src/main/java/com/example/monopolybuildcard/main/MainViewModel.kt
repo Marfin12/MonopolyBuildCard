@@ -4,10 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.monopolybuildcard.Constant
+import com.example.monopolybuildcard.GlobalActionData
 import com.example.monopolybuildcard.GlobalCardData
-import com.example.monopolybuildcard.R
-import com.example.monopolybuildcard.asset.AssetData
-import com.example.monopolybuildcard.card.CardType
+import com.example.monopolybuildcard.Util.drawCard
 import com.google.firebase.database.*
 
 class MainViewModel : ViewModel() {
@@ -101,13 +100,15 @@ class MainViewModel : ViewModel() {
     fun postACard(
         roomName: String,
         roomData: RoomData,
-        whichCard: GlobalCardData
+        whichCard: GlobalCardData,
+        fromId: String,
+        toId: String = ""
     ) {
         onRoomMovingListener = DatabaseReference.CompletionListener { databaseError, _ ->
             if (databaseError != null) _isSuccessful.value = false
         }
 
-        roomData.actions?.add(whichCard)
+        roomData.actions?.add(GlobalActionData(fromId, toId, whichCard))
 
         val roomFields = HashMap<String, Any>()
         roomFields[roomName] = roomData
@@ -118,13 +119,5 @@ class MainViewModel : ViewModel() {
                 roomFields,
                 onRoomMovingListener
             )
-    }
-
-    private fun drawCard(roomData: RoomData, currentPlayerIndex: Int) {
-        val totalReadyCards = roomData.cards?.ready?.size ?: 0
-        if (totalReadyCards > 0) {
-            val sharedCard = roomData.cards?.ready?.removeAt(0) ?: GlobalCardData()
-            roomData.users?.get(currentPlayerIndex)?.cards?.add(sharedCard)
-        }
     }
 }

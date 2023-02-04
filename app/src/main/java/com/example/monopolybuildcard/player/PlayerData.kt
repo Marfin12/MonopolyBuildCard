@@ -12,11 +12,9 @@ import kotlinx.parcelize.Parcelize
 data class PlayerData(
     var id: String = "",
     var name: String = "",
-    var shouldHost: Boolean? = null,
-    var money: Int = 0,
-    var asset: Int = 0,
-    var listAsset: MutableList<GlobalCardData> = mutableListOf(),
-    var listMoney: MutableList<GlobalCardData> = mutableListOf(),
+    var money: MutableList<GlobalCardData> = mutableListOf(),
+    var properties: MutableList<GlobalCardData> = mutableListOf(),
     var cards: MutableList<GlobalCardData> = mutableListOf(),
-    var shouldRunning: Boolean? = null
+    var shouldRunning: Boolean? = null,
+    var shouldHost: Boolean? = null
 ) : Parcelable

@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.example.monopolybuildcard.GlobalActionData
 import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
 
@@ -22,7 +23,7 @@ open class CardAdapter(
     var onCardAdded: ((GlobalCardData, Int) -> Unit)? = null
     var onCardDiscard: ((GlobalCardData, Int) -> Unit)? = null
 
-    var actions = mutableListOf<GlobalCardData>()
+    var actions = mutableListOf<GlobalActionData>()
     var isDiscard = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
@@ -35,7 +36,7 @@ open class CardAdapter(
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
         val item = dataset[position]
 
-        holder.cardAdd.visibility = if (actions.any { it.type == item.type }) View.INVISIBLE
+        holder.cardAdd.visibility = if (actions.any { it.card?.type == item.type }) View.INVISIBLE
         else View.VISIBLE
 
         if (isDiscard) holder.cardAdd.setImageResource(R.drawable.spr_card_discard)
@@ -43,11 +44,11 @@ open class CardAdapter(
 
         holder.cardImage.setOnClickListener {
             if (isDiscard) onCardDiscard?.invoke(item, position)
-            else if (!actions.any { it.type == item.type }) onCardAdded?.invoke(item, position)
+            else if (!actions.any { it.card?.type == item.type }) onCardAdded?.invoke(item, position)
         }
 
         when (item.type) {
-            CardType.ASSET_TYPE -> {
+            CardType.PROPERTY_TYPE -> {
                 holder.cardImage.setImageResource(R.drawable.spr_card_asset_brown_apartement)
                 holder.assetName.visibility = View.VISIBLE
                 holder.assetPrice.visibility = View.VISIBLE
@@ -70,7 +71,7 @@ open class CardAdapter(
                     holder.cardActionRentImage.setImageResource(R.drawable.spr_card_action_rent_any)
 
                     val itemId = item.id ?: ""
-                    val lastCharId = itemId.length
+                    val lastCharId = itemId.length - 1
                     holder.cardActionRentTitle.text = "ASSET ${itemId[lastCharId]}"
                     holder.cardActionRentDesc.text = "All player pay based on this asset price"
 
@@ -137,7 +138,7 @@ open class CardAdapter(
         notifyDataSetChanged()
     }
 
-    fun replaceActionPostedCard(actionCards: MutableList<GlobalCardData>) {
+    fun replaceActionPostedCard(actionCards: MutableList<GlobalActionData>) {
         this.actions = actionCards
         notifyDataSetChanged()
     }

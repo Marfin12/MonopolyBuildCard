@@ -6,9 +6,8 @@ import kotlinx.parcelize.Parcelize
 
 @Keep
 @Parcelize
-data class GlobalCardData(
-    var id: String? = "",
-    var value: Int? = 0,
-    var type: String? = "",
-    var price: Int? = 0
+data class GlobalActionData(
+    var fromId: String? = "",
+    var toId: String? = "",
+    var card: GlobalCardData? = null
 ) : Parcelable
