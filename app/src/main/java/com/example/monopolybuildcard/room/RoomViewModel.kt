@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.example.monopolybuildcard.Constant
 import com.example.monopolybuildcard.Constant.ROOMS
 import com.example.monopolybuildcard.Util
+import com.example.monopolybuildcard.player.PlayerStatus
 import com.google.firebase.database.*
 
 
@@ -56,7 +57,7 @@ class RoomViewModel : ViewModel() {
 
                     playerFields[Constant.RoomFields.PlayerFields.ID] = Util.getAndroidId(context)
                     playerFields[Constant.RoomFields.PlayerFields.SHOULD_HOST] = false
-                    playerFields[Constant.RoomFields.PlayerFields.SHOULD_RUNNING] = false
+                    playerFields[Constant.RoomFields.PlayerFields.STATUS] = PlayerStatus.WAITING
                     playerFields[Constant.RoomFields.PlayerFields.NAME] = Build.MODEL
 
                     FirebaseDatabase.getInstance().reference

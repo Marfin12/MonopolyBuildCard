@@ -16,3 +16,9 @@ data class RoomData(
     var maxPlayer: Int? = -1,
     var users: MutableList<PlayerData>? = mutableListOf()
 ) : Parcelable
+
+@Keep
+@Parcelize
+data class RoomCardData(
+    var ready: MutableList<GlobalCardData>? = mutableListOf()
+) : Parcelable

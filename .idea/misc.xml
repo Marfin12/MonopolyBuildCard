@@ -3,24 +3,27 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../layout/custom_preview.xml" value="0.14221014492753623" />
         <entry key="app/src/main/res/drawable/spr_card_add.xml" value="0.1085" />
         <entry key="app/src/main/res/drawable/spr_card_asset_price_background.xml" value="0.157" />
         <entry key="app/src/main/res/drawable/spr_card_discard.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/spr_player_info.xml" value="0.1595" />
         <entry key="app/src/main/res/drawable/spr_player_turn.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/spr_popup_close.xml" value="0.1" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.337469482421875" />
+        <entry key="app/src/main/res/layout/action_card_item.xml" value="0.13177083333333334" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.21725239616613418" />
         <entry key="app/src/main/res/layout/activity_menu.xml" value="0.33100738525390627" />
         <entry key="app/src/main/res/layout/activity_room.xml" value="0.1947463768115942" />
         <entry key="app/src/main/res/layout/asset_item.xml" value="0.4629989402881567" />
-        <entry key="app/src/main/res/layout/card_item.xml" value="0.9742268041237113" />
+        <entry key="app/src/main/res/layout/card_item.xml" value="0.40020794426043005" />
         <entry key="app/src/main/res/layout/card_item_asset.xml" value="0.4562881469726563" />
         <entry key="app/src/main/res/layout/card_item_money.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/card_item_non_asset.xml" value="0.6924626668294271" />
         <entry key="app/src/main/res/layout/card_item_price_visible.xml" value="0.1" />
         <entry key="app/src/main/res/layout/money_item.xml" value="0.1947463768115942" />
-        <entry key="app/src/main/res/layout/player_item.xml" value="0.1947463768115942" />
+        <entry key="app/src/main/res/layout/player_item.xml" value="0.1508712547412817" />
         <entry key="app/src/main/res/layout/player_layout.xml" value="0.1947463768115942" />
-        <entry key="app/src/main/res/layout/popup_player.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/popup_player.xml" value="0.32647552490234377" />
         <entry key="app/src/main/res/layout/room_item.xml" value="0.2737226277372263" />
       </map>
     </option>

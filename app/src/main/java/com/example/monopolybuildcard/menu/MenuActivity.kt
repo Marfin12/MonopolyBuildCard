@@ -11,7 +11,6 @@ import com.example.monopolybuildcard.room.RoomActivity
 import com.example.monopolybuildcard.databinding.ActivityMenuBinding
 
 class MenuActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMenuBinding
     private lateinit var menuViewModel: MenuViewModel
 
@@ -37,6 +36,7 @@ class MenuActivity : AppCompatActivity() {
                     data.roomName?.let { MainActivity.launch(this@MenuActivity, it) }
                 } else if (data.isSuccessful == false) {
                     Toast.makeText(this, "Something wrong!", Toast.LENGTH_SHORT).show()
+                    menuViewModel.initCardsFromFirebase()
                 }
             }
         }

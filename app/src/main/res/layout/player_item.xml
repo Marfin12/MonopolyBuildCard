@@ -11,7 +11,7 @@
     <View
         android:id="@+id/view_enemy_square"
         android:layout_width="0dp"
-        android:layout_height="96dp"
+        android:layout_height="112dp"
         android:background="@drawable/spr_player_turn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -63,6 +63,17 @@
         android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="@id/tv_enemy_money"
         app:layout_constraintTop_toBottomOf="@id/tv_enemy_money" />
+
+    <TextView
+        android:id="@+id/tv_enemy_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Action: "
+        android:textSize="16dp"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toStartOf="@id/tv_enemy_asset"
+        app:layout_constraintTop_toBottomOf="@id/tv_enemy_asset" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

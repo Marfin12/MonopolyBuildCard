@@ -42,8 +42,24 @@
             />
 
         <include
-            android:id="@+id/layout_include_selected_money_card"
+            android:id="@+id/layout_include_selected_asset_card_forced_deal"
+            layout="@layout/card_item_price_visible"
+            android:layout_width="63dp"
+            android:visibility="gone"
+            android:layout_height="100dp"
+            />
+
+        <include
+            android:id="@+id/layout_include_selected_flip_card"
             layout="@layout/card_item"
+            android:layout_width="63dp"
+            android:visibility="gone"
+            android:layout_height="100dp"
+            />
+
+        <include
+            android:id="@+id/layout_include_selected_money_card"
+            layout="@layout/card_item_non_asset"
             android:layout_marginStart="32dp"
             android:layout_width="63dp"
             android:visibility="gone"
@@ -52,7 +68,16 @@
 
         <include
             android:id="@+id/layout_include_selected_action_card"
-            layout="@layout/card_item"
+            layout="@layout/card_item_non_asset"
+            android:layout_marginStart="32dp"
+            android:layout_width="63dp"
+            android:visibility="gone"
+            android:layout_height="100dp"
+            />
+
+        <include
+            android:id="@+id/layout_include_double_the_rent_card"
+            layout="@layout/card_item_non_asset"
             android:layout_marginStart="32dp"
             android:layout_width="63dp"
             android:visibility="gone"

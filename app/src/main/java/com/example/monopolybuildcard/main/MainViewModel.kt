@@ -5,8 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.monopolybuildcard.Constant
 import com.example.monopolybuildcard.GlobalActionData
-import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.Util.drawCard
+import com.example.monopolybuildcard.player.PlayerStatus
+import com.example.monopolybuildcard.room.RoomStatus
 import com.google.firebase.database.*
 
 class MainViewModel : ViewModel() {
@@ -41,8 +42,8 @@ class MainViewModel : ViewModel() {
             if (databaseError != null) _isSuccessful.value = false
         }
 
-        roomData.status = "started"
-        roomData.users?.get(0)?.shouldRunning = true
+        roomData.status = RoomStatus.STARTED
+        roomData.users?.get(0)?.status = PlayerStatus.RUNNING
 
         for (i in 0 until roomData.users!!.size) {
             drawCard(roomData, i)
@@ -70,9 +71,9 @@ class MainViewModel : ViewModel() {
         }
 
         var currentPlayerIndex = roomData.users?.indexOfFirst { playerData ->
-            playerData.shouldRunning == true
+            playerData.status == PlayerStatus.RUNNING
         } ?: -1
-        roomData.users?.get(currentPlayerIndex)?.shouldRunning = false
+        roomData.users?.get(currentPlayerIndex)?.status = PlayerStatus.WAITING
 
         val totalUsers = (roomData.users!!.size - 1)
         if (currentPlayerIndex < totalUsers) {
@@ -81,7 +82,7 @@ class MainViewModel : ViewModel() {
             currentPlayerIndex = 0
         }
 
-        roomData.users?.get(currentPlayerIndex)?.shouldRunning = true
+        roomData.users?.get(currentPlayerIndex)?.status = PlayerStatus.RUNNING
 
         drawCard(roomData, currentPlayerIndex)
         drawCard(roomData, currentPlayerIndex)
@@ -100,15 +101,13 @@ class MainViewModel : ViewModel() {
     fun postACard(
         roomName: String,
         roomData: RoomData,
-        whichCard: GlobalCardData,
-        fromId: String,
-        toId: String = ""
+        actionCards: MutableList<GlobalActionData>
     ) {
         onRoomMovingListener = DatabaseReference.CompletionListener { databaseError, _ ->
             if (databaseError != null) _isSuccessful.value = false
         }
 
-        roomData.actions?.add(GlobalActionData(fromId, toId, whichCard))
+        roomData.actions?.addAll(actionCards)
 
         val roomFields = HashMap<String, Any>()
         roomFields[roomName] = roomData

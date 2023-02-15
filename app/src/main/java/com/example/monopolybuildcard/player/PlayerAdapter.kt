@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
 
 
@@ -21,6 +22,7 @@ open class PlayerAdapter(
 
     var onItemInfoClick: ((PlayerData, Int) -> Unit)? = null
     var onPlayerViewClick: ((PlayerData, Int) -> Unit)? = null
+    var playerActions = mutableListOf<PlayerActionData>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         val adapterLayout = LayoutInflater.from(parent.context)
@@ -33,9 +35,15 @@ open class PlayerAdapter(
         val item = dataset[position]
 
         holder.playerName.text = item.name
-//        holder.playerMoney.text = "${item.money} M"
-//        holder.playerAsset.text = item.properties.toString()
-        holder.playerTurnOutline.isVisible = item.shouldRunning == true
+
+        if (playerActions.size > 0) {
+            playerActions.forEach {
+                if (item.id == it.ownerId) holder.playerAction.text = "Action: ${it.action}"
+            }
+        }
+        else holder.playerAction.text = "Action: "
+
+        holder.playerTurnOutline.isVisible = item.status == PlayerStatus.RUNNING
 
         holder.playerInfo.setOnClickListener {
             onItemInfoClick?.invoke(item, position)
@@ -49,6 +57,7 @@ open class PlayerAdapter(
         val playerName: TextView = itemView.findViewById(R.id.tv_enemy_name)
         val playerMoney: TextView = itemView.findViewById(R.id.tv_enemy_money)
         val playerAsset: TextView = itemView.findViewById(R.id.tv_enemy_asset)
+        val playerAction: TextView = itemView.findViewById(R.id.tv_enemy_action)
         val playerInfo: ImageView = itemView.findViewById(R.id.iv_enemy_info)
         val playerTurnOutline: View = itemView.findViewById(R.id.view_enemy_square)
         val playerView: View = itemView.findViewById(R.id.view_enemy_parent)
@@ -56,19 +65,24 @@ open class PlayerAdapter(
 
     override fun getItemCount() = dataset.size
 
-    fun setPlayerTurn(whichPlayer: Int) {
-        dataset.forEachIndexed { index, playerData ->
-            playerData.shouldRunning = index == whichPlayer
-        }
+    fun addPlayer(playerData: PlayerData) {
+        dataset.add(playerData)
+
         notifyDataSetChanged()
     }
 
-    fun listPlayer(): List<PlayerData> {
-        return dataset
+    fun setPlayerAction(cardData: GlobalCardData, ownerId: String) {
+        playerActions.add(PlayerActionData(
+            ownerId,
+            cardData.id ?: ""
+        ))
+
+        notifyDataSetChanged()
     }
 
-    fun addPlayer(playerData: PlayerData) {
-        dataset.add(playerData)
+    fun clearPlayerAction() {
+        playerActions.clear()
+
         notifyDataSetChanged()
     }
 

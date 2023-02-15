@@ -5,13 +5,17 @@ import android.os.Build.MODEL
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.monopolybuildcard.Constant.CardName
 import com.example.monopolybuildcard.Constant.CARDS
 import com.example.monopolybuildcard.Constant.ROOMS
 import com.example.monopolybuildcard.Constant.RoomFields
 import com.example.monopolybuildcard.Constant.RoomFields.PlayerFields
 import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.Util
+import com.example.monopolybuildcard.Util.swap
 import com.example.monopolybuildcard.card.CardType
+import com.example.monopolybuildcard.player.PlayerStatus
+import com.example.monopolybuildcard.room.RoomStatus
 import com.google.firebase.database.*
 
 
@@ -36,114 +40,146 @@ class MenuViewModel : ViewModel() {
 
         playerFields[PlayerFields.ID] = Util.getAndroidId(context)
         playerFields[PlayerFields.SHOULD_HOST] = true
-        playerFields[PlayerFields.SHOULD_RUNNING] = false
+        playerFields[PlayerFields.STATUS] = PlayerStatus.WAITING
         playerFields[PlayerFields.NAME] = MODEL
 
         playerListField["0"] = playerFields
-        cardListField["ready"] = cardOnDeck.shuffled()
+        if (cardOnDeck.size > 0) {
+            // deal breaker, force deal, sly deal debt & happy birthday testing
+//            cardOnDeck.swap(0, 8)
+//            cardOnDeck.swap(1, 9)
+//            cardOnDeck.swap(2, 10)
+//            cardOnDeck.swap(4, 18)
+//            cardOnDeck.swap(5, 19)
+//            cardOnDeck.swap(6, 20)
+            // rent, double the rent & say no test
+//            cardOnDeck.swap(0, 19)
+//            cardOnDeck.swap(1, 14)
+//            cardOnDeck.swap(2, 18)
+//            cardOnDeck.swap(3, 20)
+//            cardOnDeck.swap(4, 15)
+//            cardOnDeck.swap(5, 14)
+//            cardOnDeck.swap(6, 25)
+//            cardOnDeck.swap(7, 13)
+            // wild card, flip & rent
+            cardOnDeck.swap(0, 34)
+            cardOnDeck.swap(1, 34)
+            cardOnDeck.swap(2, 19)
+            cardOnDeck.swap(3, 14)
 
-        roomFields[RoomFields.CARDS] = cardListField
-        roomFields[RoomFields.MAX_PLAYER] = 2
-        roomFields[RoomFields.STATUS] = "waiting"
-        roomFields[RoomFields.USERS] = playerListField
 
-        completionListener = DatabaseReference.CompletionListener { databaseError, _ ->
-            _menuData.value = MenuData(databaseError == null, roomName)
-        }
+            cardListField["ready"] = cardOnDeck
 
-        FirebaseDatabase.getInstance().reference
-            .child(ROOMS)
-            .child(roomName)
-            .updateChildren(roomFields, completionListener)
+            roomFields[RoomFields.CARDS] = cardListField
+            roomFields[RoomFields.MAX_PLAYER] = 2
+            roomFields[RoomFields.STATUS] = RoomStatus.WAITING
+            roomFields[RoomFields.USERS] = playerListField
+
+            completionListener = DatabaseReference.CompletionListener { databaseError, _ ->
+                _menuData.value = MenuData(databaseError == null, roomName)
+            }
+
+            FirebaseDatabase.getInstance().reference
+                .child(ROOMS)
+                .child(roomName)
+                .updateChildren(roomFields, completionListener)
+        } else _menuData.value = MenuData(false, roomName)
     }
 
     fun initCardsFromFirebase() {
-//        val cardsReference = FirebaseDatabase.getInstance().reference.child(CARDS)
-//
-//        cardsReference.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                snapshot.children.forEach { playerData ->
-//                    playerData.getValue(GlobalCardData::class.java)?.let {
-//                        cardOnDeck.add(it)
-//                    }
-//                }
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//        })
-        var cluster = 4
-        var asciiValue = 98
-        val cardListField = HashMap<String, Any>()
-        for(i in 0..4) {
-            val money = i+1
-            val cardName = "m${money}"
-            val cardData = GlobalCardData(
-                cardName, money, CardType.MONEY_TYPE, money
-            )
-            cardListField[i.toString()] = cardData
-        }
-        val cardName10 = "m10"
-        val cardName20 = "m20"
-        cardListField["5"] = GlobalCardData(
-            cardName10, 10, CardType.MONEY_TYPE, 10
-        )
-        cardListField["6"] = GlobalCardData(
-            cardName20, 20, CardType.MONEY_TYPE, 20
-        )
-        cardListField["7"] = GlobalCardData(
-            "go_pass", 0, CardType.ACTION_TYPE, 2
-        )
-        cardListField["8"] = GlobalCardData(
-            "deal_breaker", 0, CardType.ACTION_TYPE, 5
-        )
-        cardListField["9"] = GlobalCardData(
-            "sly_deal", 0, CardType.ACTION_TYPE, 3
-        )
-        cardListField["10"] = GlobalCardData(
-            "forced_deal", 0, CardType.ACTION_TYPE, 2
-        )
+        val cardsReference = FirebaseDatabase.getInstance().reference.child(CARDS)
+
+        cardsReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.forEach { playerData ->
+                    playerData.getValue(GlobalCardData::class.java)?.let {
+                        cardOnDeck.add(it)
+                    }
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+//        var cluster = 4
+//        var asciiValue = 97
+//        val cardListField = HashMap<String, Any>()
+//        for(i in 0..4) {
+//            val money = i+1
+//            val cardName = "m"
+//            val cardData = GlobalCardData(
+//                cardName, money, CardType.MONEY_TYPE, money
+//            )
+//            cardListField[i.toString()] = cardData
+//        }
+//        cardListField["5"] = GlobalCardData(
+//            "m", 10, CardType.MONEY_TYPE, 10
+//        )
+//        cardListField["6"] = GlobalCardData(
+//            "m", 20, CardType.MONEY_TYPE, 20
+//        )
+//        cardListField["7"] = GlobalCardData(
+//            CardName.ACTION_PASS_GO, 0, CardType.ACTION_TYPE, 2
+//        )
+//        cardListField["8"] = GlobalCardData(
+//            CardName.ACTION_DEAL_BREAKER, 0, CardType.ACTION_TYPE, 5
+//        )
+//        cardListField["9"] = GlobalCardData(
+//            CardName.ACTION_SLY_DEAL, 0, CardType.ACTION_TYPE, 3
+//        )
+//        cardListField["10"] = GlobalCardData(
+//            CardName.ACTION_FORCED_DEAL, 0, CardType.ACTION_TYPE, 2
+//        )
 //        cardListField["11"] = GlobalCardData(
-//            "debt_collector", CardType.ACTION_TYPE, 3
+//            CardName.ACTION_DEBT_COLLECTOR, 5, CardType.ACTION_TYPE, 3
 //        )
 //        cardListField["12"] = GlobalCardData(
-//            "happy_birthday", CardType.ACTION_TYPE, 3
+//            CardName.ACTION_HAPPY_BIRTHDAY, 2, CardType.ACTION_TYPE, 3
 //        )
 //        cardListField["13"] = GlobalCardData(
-//            "say_no", CardType.ACTION_TYPE, 3
+//            CardName.ACTION_SAY_NO, 0, CardType.ACTION_TYPE, 3
 //        )
 //        cardListField["14"] = GlobalCardData(
-//            "rent_B", CardType.ACTION_TYPE, 2
+//            CardName.RENT_BLOK_BC_TYPE, 0, CardType.ACTION_TYPE, 2
 //        )
 //        cardListField["15"] = GlobalCardData(
-//            "rent_C", CardType.ACTION_TYPE, 2
+//            CardName.RENT_BLOK_DE_TYPE, 0, CardType.ACTION_TYPE, 2
 //        )
 //        cardListField["16"] = GlobalCardData(
-//            "rent_D", CardType.ACTION_TYPE, 2
+//            CardName.RENT_BLOK_FG_TYPE, 0, CardType.ACTION_TYPE, 2
 //        )
 //        cardListField["17"] = GlobalCardData(
-//            "rent_E", CardType.ACTION_TYPE, 2
+//            CardName.RENT_BLOK_ANY_TYPE, 0, CardType.ACTION_TYPE, 3
 //        )
 //        cardListField["18"] = GlobalCardData(
-//            "rent_any", CardType.ACTION_TYPE, 3
+//            CardName.DOUBLE_THE_RENT, 0, CardType.ACTION_TYPE, 5
 //        )
-        var price = 1
-        for(i in 11..21) {
-            if (cluster > 2) {
-                cluster = 1
-                if (asciiValue == 108) asciiValue+=2
-                else asciiValue++
-                price++
-            } else cluster++
-            val cardName = "${asciiValue.toChar()}"
-            cardListField[i.toString()] = GlobalCardData(
-                cardName, cluster, CardType.PROPERTY_TYPE, price
-            )
-        }
-        FirebaseDatabase.getInstance().reference
-            .child(CARDS)
-            .updateChildren(cardListField)
+//
+//        var price = 1
+//        var totalLevel = 2
+//        for(i in 19..33) {
+//            if (cluster > totalLevel) {
+//                cluster = 1
+//                if (asciiValue == 108) asciiValue+=2
+//                else asciiValue++
+//                price++
+//            } else cluster++
+//            val cardName = "${asciiValue.toChar()}"
+//            cardListField[i.toString()] = GlobalCardData(
+//                cardName, cluster, CardType.PROPERTY_TYPE, price
+//            )
+//
+//            if (i >= 28) totalLevel = 1
+//        }
+//        cardListField["34"] = GlobalCardData("bc", 1, CardType.PROPERTY_TYPE, -1)
+//        cardListField["35"] = GlobalCardData("bc", 2, CardType.PROPERTY_TYPE, -1)
+//        cardListField["36"] = GlobalCardData("bc", 3, CardType.PROPERTY_TYPE, -1)
+////        cardListField["36"] = GlobalCardData("s", 0, CardType.PROPERTY_TYPE, -1)
+//
+//        FirebaseDatabase.getInstance().reference
+//            .child(CARDS)
+//            .updateChildren(cardListField)
     }
 
     private fun getRandomString(): String {

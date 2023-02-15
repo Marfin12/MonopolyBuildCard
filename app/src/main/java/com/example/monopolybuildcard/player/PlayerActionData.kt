@@ -1,4 +1,4 @@
-package com.example.monopolybuildcard.main
+package com.example.monopolybuildcard.player
 
 import android.os.Parcelable
 import androidx.annotation.Keep
@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 
 @Keep
 @Parcelize
-data class RoomCardData(
-    var ready: MutableList<GlobalCardData>? = mutableListOf()
+data class PlayerActionData(
+    var ownerId: String,
+    var action: String
 ) : Parcelable
