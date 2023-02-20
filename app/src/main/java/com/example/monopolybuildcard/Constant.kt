@@ -30,6 +30,7 @@ object Constant {
         const val PROPERTY_F = "f"
         const val PROPERTY_G = "g"
         const val PROPERTY_H = "h"
+        const val PROPERTY_BC = "bc"
         const val PROPERTY_FLIP = "z"
         const val ACTION_PASS_GO = "pass_go"
         const val ACTION_SLY_DEAL = "sly_deal"

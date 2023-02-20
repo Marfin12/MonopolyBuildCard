@@ -1,15 +1,7 @@
 package com.example.monopolybuildcard.asset
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.provider.Settings
 import androidx.annotation.Keep
 import com.example.monopolybuildcard.Constant.CardName
-import com.example.monopolybuildcard.GlobalActionData
-import com.example.monopolybuildcard.GlobalCardData
-import com.example.monopolybuildcard.R
-import com.example.monopolybuildcard.main.RoomCardData
-import com.example.monopolybuildcard.main.RoomData
 
 @Keep
 object AssetUtil {
@@ -19,5 +11,21 @@ object AssetUtil {
         CardName.PROPERTY_H to 7
     )
 
-    val assetWildCard = mutableListOf("bc")
+    val assetPosted = hashMapOf(
+        CardName.PROPERTY_B to 0, CardName.PROPERTY_C to 0, CardName.PROPERTY_D to 0,
+        CardName.PROPERTY_E to 0, CardName.PROPERTY_F to 0, CardName.PROPERTY_G to 0,
+        CardName.PROPERTY_H to 0
+    )
+
+    val assetWildCard = mutableListOf(CardName.PROPERTY_BC)
+
+    fun resetAllAssetPosted() {
+        assetPosted[CardName.PROPERTY_B] = 0
+        assetPosted[CardName.PROPERTY_C] = 0
+        assetPosted[CardName.PROPERTY_D] = 0
+        assetPosted[CardName.PROPERTY_E] = 0
+        assetPosted[CardName.PROPERTY_F] = 0
+        assetPosted[CardName.PROPERTY_G] = 0
+        assetPosted[CardName.PROPERTY_H] = 0
+    }
 }

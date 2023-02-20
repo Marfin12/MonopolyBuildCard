@@ -14,6 +14,9 @@ import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
 import com.example.monopolybuildcard.Util
 import com.example.monopolybuildcard.Util.substringLastTwoChar
+import com.example.monopolybuildcard.card.CardUtil.renderActionCard
+import com.example.monopolybuildcard.card.CardUtil.renderMoneyCard
+import com.example.monopolybuildcard.card.CardUtil.renderPropertyCard
 import com.example.monopolybuildcard.main.RoomData
 
 /**
@@ -60,104 +63,12 @@ open class CardAdapter(
         holder.assetPrice.visibility = View.GONE
 
         when (item.type) {
-            CardType.PROPERTY_TYPE -> {
-                holder.cardImage.setImageResource(Util.mapIdToImage(item))
-                holder.assetName.text = "Blok ${item.id?.uppercase()}"
-
-                val totalCharId = item.id?.length ?: -1
-
-                holder.assetName.visibility = View.VISIBLE
-                holder.assetPrice.visibility = View.VISIBLE
-
-                if (totalCharId > 1) {
-                    holder.wildCardRoot.visibility = View.VISIBLE
-                    holder.wildCardTopImage.setImageResource(R.drawable.spr_card_asset_brown_apartement)
-                    holder.wildCardBottomImage.setImageResource(R.drawable.spr_card_asset_blue_apartement)
-
-                    holder.wildCardTopImage.setOnClickListener {
-                        onCardAdded?.invoke(item, position)
-                    }
-                    holder.wildCardBottomImage.setOnClickListener {
-                        item.id?.reversed()
-                        onCardAdded?.invoke(item, position)
-                    }
-                }
-            }
-            CardType.MONEY_TYPE -> {
-                holder.cardImage.setImageResource(Util.mapIdToImage(item))
-            }
-            CardType.ACTION_TYPE -> {
-                if (item.id?.contains("rent") == true) {
-                    holder.cardRentRoot.visibility = View.VISIBLE
-                    holder.cardNoRent.visibility = View.GONE
-                    holder.cardActionRentImage.setImageResource(Util.mapIdToImage(item))
-
-                    val itemId = item.id ?: ""
-                    holder.cardActionRentTitle.text = "ASSET ${substringLastTwoChar(itemId)}"
-                    holder.cardActionRentDesc.text = "All player pay rent based on one of these assets"
-
-                    holder.cardActionRentCenterImage2.visibility = View.VISIBLE
-
-                    when(itemId) {
-                        CardName.RENT_BLOK_BC_TYPE -> {
-                            holder.cardActionRentCenterImage
-                                .setImageResource(R.drawable.spr_card_asset_blue_apartement)
-                            holder.cardActionRentCenterImage2
-                                .setImageResource(R.drawable.spr_card_asset_aqua_apartement)
-                        }
-                        CardName.RENT_BLOK_DE_TYPE -> {
-                            holder.cardActionRentCenterImage
-                                .setImageResource(R.drawable.spr_card_asset_red_apartement)
-                            holder.cardActionRentCenterImage2
-                                .setImageResource(R.drawable.spr_card_asset_brown_apartement)
-                        }
-                        CardName.RENT_BLOK_FG_TYPE -> {
-                            holder.cardActionRentCenterImage
-                                .setImageResource(R.drawable.spr_card_asset_orange_apartement)
-                            holder.cardActionRentCenterImage2
-                                .setImageResource(R.drawable.spr_card_asset_lime_apartement)
-                        }
-                        CardName.RENT_BLOK_ANY_TYPE -> {
-                            holder.cardActionRentCenterImage
-                                .setImageResource(R.drawable.spr_card_action_rent_any)
-                            holder.cardActionRentCenterImage2.visibility = View.GONE
-                            holder.cardActionRentTitle.text = "ASSET ?"
-                            holder.cardActionRentDesc.text = "All player pay rent based on any selected asset"
-                        }
-                        CardName.DOUBLE_THE_RENT -> {
-                            holder.cardActionRentCenterImage
-                                .setImageResource(R.drawable.spr_card_action_double_the_rent)
-                            holder.cardActionRentCenterImage2.visibility = View.GONE
-                            holder.cardActionRentTitle.text = "RENT ?"
-                            holder.cardActionRentDesc.text = "Select any rent card you want to double with"
-                        }
-                    }
-                } else {
-                    holder.cardImage.setImageResource(Util.mapIdToImage(item))
-                }
-            }
+            CardType.PROPERTY_TYPE -> renderPropertyCard(holder, item, onCardAdded, position)
+            CardType.MONEY_TYPE -> renderMoneyCard(holder, item)
+            CardType.ACTION_TYPE -> renderActionCard(holder, item)
         }
     }
 
-    inner class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val cardRoot: View = itemView.findViewById(R.id.layout_root_card)
-        val cardNoRent: View = itemView.findViewById(R.id.layout_parent_card)
-        val cardImage: ImageView = itemView.findViewById(R.id.iv_card)
-        val assetName: TextView = itemView.findViewById(R.id.tv_card_asset_name)
-        val assetPrice: ConstraintLayout = itemView.findViewById(R.id.layout_card_asset_price)
-        val cardAdd: ImageView = itemView.findViewById(R.id.iv_add_card)
-
-        val cardRentRoot: View = itemView.findViewById(R.id.layout_parent_action_rent_card)
-        val cardActionRentImage: ImageView = itemView.findViewById(R.id.iv_action_rent_card)
-        val cardActionRentCenterImage: ImageView = itemView.findViewById(R.id.iv_action_rent_center_image)
-        val cardActionRentCenterImage2: ImageView = itemView.findViewById(R.id.iv_action_rent_center_image2)
-        val cardActionRentTitle: TextView = itemView.findViewById(R.id.tv_action_rent_title)
-        val cardActionRentDesc: TextView = itemView.findViewById(R.id.tv_action_rent_desc)
-
-        val wildCardRoot: View = itemView.findViewById(R.id.layout_parent_wild_card)
-        val wildCardTopImage: ImageView = itemView.findViewById(R.id.iv_wild_card_top)
-        val wildCardBottomImage: ImageView = itemView.findViewById(R.id.iv_wild_card_bottom)
-    }
 
     override fun getItemCount() = dataset.size
 
@@ -182,16 +93,6 @@ open class CardAdapter(
 
     fun undoDiscardMode() {
         isDiscard = false
-        notifyDataSetChanged()
-    }
-
-    fun resetCardStatus() {
-        actions.clear()
-        notifyDataSetChanged()
-    }
-
-    fun addCard(cardData: MutableList<GlobalCardData>) {
-        dataset.addAll(cardData)
         notifyDataSetChanged()
     }
 
@@ -222,11 +123,32 @@ open class CardAdapter(
     }
 
     fun replaceActionPostedCard(actionCards: MutableList<GlobalActionData>) {
-        this.actions = actionCards
+//        this.actions = actionCards
         notifyDataSetChanged()
     }
 
     fun listCard(): MutableList<GlobalCardData> {
         return dataset
+    }
+
+    inner class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val cardRoot: View = itemView.findViewById(R.id.layout_root_card)
+        val cardNoRent: View = itemView.findViewById(R.id.layout_parent_card)
+        val cardImage: ImageView = itemView.findViewById(R.id.iv_card)
+        val assetName: TextView = itemView.findViewById(R.id.tv_card_asset_name)
+        val assetPrice: ConstraintLayout = itemView.findViewById(R.id.layout_card_asset_price)
+        val cardAdd: ImageView = itemView.findViewById(R.id.iv_add_card)
+
+        val cardRentRoot: View = itemView.findViewById(R.id.layout_parent_action_rent_card)
+        val cardActionRentImage: ImageView = itemView.findViewById(R.id.iv_action_rent_card)
+        val cardActionRentCenterImage: ImageView = itemView.findViewById(R.id.iv_action_rent_center_image)
+        val cardActionRentCenterImage2: ImageView = itemView.findViewById(R.id.iv_action_rent_center_image2)
+        val cardActionRentTitle: TextView = itemView.findViewById(R.id.tv_action_rent_title)
+        val cardActionRentDesc: TextView = itemView.findViewById(R.id.tv_action_rent_desc)
+
+        val wildCardRoot: View = itemView.findViewById(R.id.layout_parent_wild_card)
+        val wildCardTopImage: ImageView = itemView.findViewById(R.id.iv_wild_card_top)
+        val wildCardBottomImage: ImageView = itemView.findViewById(R.id.iv_wild_card_bottom)
+        val wildCardAssetName: TextView = itemView.findViewById(R.id.tv_wild_card_asset_name)
     }
 }

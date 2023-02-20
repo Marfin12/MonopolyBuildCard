@@ -118,8 +118,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-
         <TextView
             android:id="@+id/tv_card_asset_name"
             android:layout_width="wrap_content"

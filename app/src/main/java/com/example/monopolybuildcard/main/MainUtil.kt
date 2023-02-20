@@ -12,6 +12,7 @@ import com.example.monopolybuildcard.Util.mapIdToImage
 import com.example.monopolybuildcard.Util.substringLastTwoChar
 import com.example.monopolybuildcard.card.CardType
 import com.example.monopolybuildcard.databinding.ActivityMainBinding
+import com.example.monopolybuildcard.databinding.CardItemWildPvBinding
 
 @Keep
 object MainUtil {
@@ -37,12 +38,14 @@ object MainUtil {
                     )
                 }
                 CardType.PROPERTY_TYPE -> {
-                    if (it.card?.id == Constant.CardName.PROPERTY_FLIP) {
-                        binding.layoutIncludeSelectedFlipCard.root.isVisible = true
-                        binding.layoutIncludeSelectedAssetCard.ivCard.setImageResource(
+                    val cardId = it.card?.id ?: ""
+                    if (cardId == Constant.CardName.PROPERTY_FLIP) {
+                        binding.layoutIncludeSelectedFlipCard.ivCard.setImageResource(
                             R.drawable.spr_card_asset_flip
                         )
-                        binding.layoutIncludeSelectedFlipCard.layoutParentWildCard.isVisible = true
+                        binding.layoutIncludeSelectedFlipCard.root.isVisible = true
+                    } else if (cardId.length > 1) {
+                        renderWildCard(binding.layoutIncludeSelectedWildCard, it.card!!)
                     } else {
                         binding.layoutIncludeSelectedAssetCard.root.isVisible = true
                         binding.layoutIncludeSelectedAssetCard.tvCardAssetName.text =
@@ -58,7 +61,7 @@ object MainUtil {
 
                         if (it.card?.id?.contains("rent") == true) {
                             ivActionRentCard.setImageResource(mapIdToImage(it.card!!))
-                            layoutParentCard.visibility = View.GONE
+                            layoutParentCard.visibility = View.INVISIBLE
                             layoutParentActionRentCard.visibility = View.VISIBLE
 
                             val itemId = it.card?.id ?: ""
@@ -119,6 +122,10 @@ object MainUtil {
         binding.layoutIncludeSelectedMoneyCard.root.isVisible = false
         binding.layoutIncludeSelectedAssetCard.root.isVisible = false
         binding.layoutIncludeSelectedActionCard.root.isVisible = false
+        binding.layoutIncludeSelectedFlipCard.root.isVisible = false
+        binding.layoutIncludeSelectedWildCard.root.isVisible = false
+        binding.layoutIncludeDoubleTheRentCard.root.isVisible = false
+        binding.layoutIncludeSelectedAssetCardForcedDeal.root.isVisible = false
     }
 
     fun adjustVisibilityPopupButtonGroup(binding: ActivityMainBinding, isPopup: Boolean) {
@@ -132,6 +139,27 @@ object MainUtil {
                 View.GONE
             binding.layoutIncludePopupPlayer.layoutFloatCheckGroup.visibility =
                 View.VISIBLE
+        }
+    }
+
+    fun renderWildCard(layoutWildCard: CardItemWildPvBinding, cardData: GlobalCardData) {
+        val cardId = cardData.id ?: ""
+
+        with (layoutWildCard) {
+            root.isVisible = true
+
+            tvCardAssetName.text = "Blok ${cardId[0]}"
+            tvWildCardAssetName.text = "Blok ${cardId[1]}"
+
+            val topImage = GlobalCardData(
+                cardId[0].toString(), cardData.value, cardData.type, cardData.price
+            )
+            val downImage = GlobalCardData(
+                cardId[1].toString(), cardData.value, cardData.type, cardData.price
+            )
+
+            ivWildCardTop.setImageResource(mapIdToImage(topImage))
+            ivWildCardBottom.setImageResource(mapIdToImage(downImage))
         }
     }
 }

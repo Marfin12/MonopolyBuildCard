@@ -96,7 +96,7 @@ object Util {
                 ACTION_DEBT_COLLECTOR -> R.drawable.spr_card_action_debt_collector
                 ACTION_HAPPY_BIRTHDAY -> R.drawable.spr_card_action_happy_birthday
                 ACTION_SAY_NO -> R.drawable.spr_card_action_say_no
-                else -> getRentTypeCard(cardData.id ?: "")
+                else -> getOtherTypeCard(cardData.id ?: "")
             }
         }
     }
@@ -107,7 +107,12 @@ object Util {
         this[index2] = tmp
     }
 
-    private fun getRentTypeCard(cardId: String): Int {
+    fun <T> MutableList<T>.sliceUntil(totalSlice: Int): MutableList<T> {
+        return if (this.size > totalSlice) this.slice(0..totalSlice).toMutableList()
+        else this
+    }
+
+    private fun getOtherTypeCard(cardId: String): Int {
         return if (cardId.contains("rent")) {
             if (cardId.contains("double") || cardId.contains("any")) {
                 R.drawable.spr_card_action_rent_4m

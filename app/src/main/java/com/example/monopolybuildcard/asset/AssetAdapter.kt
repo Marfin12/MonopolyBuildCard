@@ -6,23 +6,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
 import com.example.monopolybuildcard.Util
-import com.example.monopolybuildcard.card.CardType
+import com.example.monopolybuildcard.Util.sliceUntil
+import com.example.monopolybuildcard.asset.AssetUtil.resetAllAssetPosted
 
 /**
- * Adapter for the task list. Has a reference to the [TodoListModel] to send actions back to it.
+ * Adapter for the task list. Has a reference to the asset to send actions back to it.
  */
 @SuppressLint("NotifyDataSetChanged")
 open class AssetAdapter(
     private var dataset: MutableList<GlobalCardData>
-): RecyclerView.Adapter<AssetAdapter.AssetViewHolder>() {
+) : RecyclerView.Adapter<AssetAdapter.AssetViewHolder>() {
 
     var onItemClick: ((GlobalCardData) -> Unit)? = null
-    var onRotateCard: ((MutableList<GlobalCardData>, Boolean) -> Unit)? = null
+    var onRotateCard: ((GlobalCardData, Boolean) -> Unit)? = null
 
     private var assetHasBeenPosted = ""
 
@@ -35,10 +35,8 @@ open class AssetAdapter(
 
     override fun onBindViewHolder(holder: AssetViewHolder, position: Int) {
         val item = dataset[position]
-        val imageCard = Util.mapIdToImage(item)
 
-        holder.setImageSource(item, imageCard)
-        holder.setOnClickAssetImage(item, onItemClick)
+        holder.setImageSource(item)
     }
 
     inner class AssetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -46,126 +44,159 @@ open class AssetAdapter(
         private val assetImage2: View = itemView.findViewById(R.id.inc_asset2)
         private val assetImage3: View = itemView.findViewById(R.id.inc_asset3)
 
-        private val rootWildCard: View = itemView.findViewById(R.id.layout_parent_wild_card)
+        private val wildCardView1 = assetImage1.findViewById<View>(R.id.layout_parent_wild_card)
+        private val wildCardView2 = assetImage2.findViewById<View>(R.id.layout_parent_wild_card)
+        private val wildCardView3 = assetImage3.findViewById<View>(R.id.layout_parent_wild_card)
 
-        fun setOnClickAssetImage(
-            cardItem: GlobalCardData,
-            onItemClick: ((GlobalCardData) -> Unit)?
-        ) {
-            assetImage1.setOnClickListener { onItemClick?.invoke(cardItem) }
-            assetImage2.setOnClickListener { onItemClick?.invoke(cardItem) }
-            assetImage3.setOnClickListener { onItemClick?.invoke(cardItem) }
+        fun setImageSource(cardItem: GlobalCardData) {
+            val charAsset = cardItem.id ?: ""
+            val topId = charAsset[0].toString()
+
+            preparePropertyUI()
+
+            if (assetHasBeenPosted.contains(topId) && topId != "") {
+                val currentAssetPosted = AssetUtil.assetPosted[topId] ?: -5
+
+                if (currentAssetPosted > 1) {
+                    AssetUtil.assetPosted[topId] = 0
+                    postAsset(charAsset, cardItem)
+                }
+                else AssetUtil.assetPosted[topId] = currentAssetPosted + 1
+            } else if (charAsset != "") {
+                assetHasBeenPosted += topId
+                postAsset(charAsset, cardItem)
+            }
         }
 
-        fun setImageSource(cardItem: GlobalCardData, image: Int) {
-            setCardImageResource(cardItem)
+        private fun postAsset(charAsset: String, cardItem: GlobalCardData) {
+            when (dataset.count { it.id?.get(0) == charAsset[0] }) {
+                0 -> println("do nothing")
+                1 -> renderCard(charAsset, assetImage1, wildCardView1, cardItem)
+                else -> {
+                    val indexData = dataset.indexOf(cardItem)
+                    val currentAssetList = dataset.slice(indexData until dataset.size)
 
-            assetImage1.findViewById<TextView>(R.id.tv_card_asset_name).visibility = View.VISIBLE
-            assetImage2.findViewById<TextView>(R.id.tv_card_asset_name).visibility = View.VISIBLE
-            assetImage3.findViewById<TextView>(R.id.tv_card_asset_name).visibility = View.VISIBLE
+                    currentAssetList.filter { it.id?.get(0) == charAsset[0] }
+                        .toMutableList()
+                        .sliceUntil(3)
+                        .forEachIndexed { index, cardData ->
+                            val cardId = cardData.id ?: ""
 
-            assetImage1.findViewById<ConstraintLayout>(R.id.layout_card_asset_price).visibility = View.VISIBLE
-            assetImage2.findViewById<ConstraintLayout>(R.id.layout_card_asset_price).visibility = View.VISIBLE
-            assetImage3.findViewById<ConstraintLayout>(R.id.layout_card_asset_price).visibility = View.VISIBLE
+                            when (index) {
+                                0 -> renderCard(cardId, assetImage1, wildCardView1, cardData)
+                                1 -> renderCard(cardId, assetImage2, wildCardView2, cardData)
+                                2 -> renderCard(cardId, assetImage3, wildCardView3, cardData)
+                            }
+                        }
+                }
+            }
+        }
 
+        private fun preparePropertyUI() {
             assetImage1.visibility = View.GONE
             assetImage2.visibility = View.GONE
             assetImage3.visibility = View.GONE
 
-            val charAsset = cardItem.id?.get(0) ?: ' '
-            if (!assetHasBeenPosted.contains(charAsset) && charAsset != ' ') {
-                assetHasBeenPosted += charAsset
-
-                assetImage1.findViewById<TextView>(R.id.tv_card_asset_name).text =
-                    "Blok ${cardItem.id?.uppercase()}"
-                assetImage2.findViewById<TextView>(R.id.tv_card_asset_name).text =
-                    "Blok ${cardItem.id?.uppercase()}"
-                assetImage3.findViewById<TextView>(R.id.tv_card_asset_name).text =
-                    "Blok ${cardItem.id?.uppercase()}"
-
-                when (dataset.count { it.id?.get(0) == charAsset }) {
-                    1 -> {
-                        assetImage1.visibility = View.VISIBLE
-                        assetImage2.visibility = View.GONE
-                        assetImage3.visibility = View.GONE
-
-                        checkWildCard(assetImage1, cardItem)
-                    }
-                    2 -> {
-                        assetImage1.visibility = View.VISIBLE
-                        assetImage2.visibility = View.VISIBLE
-                        assetImage3.visibility = View.GONE
-
-                        checkWildCard(assetImage2, cardItem)
-                    }
-                    3 -> {
-                        assetImage1.visibility = View.VISIBLE
-                        assetImage2.visibility = View.VISIBLE
-                        assetImage3.visibility = View.VISIBLE
-
-                        checkWildCard(assetImage3, cardItem)
-                    }
-                }
-            }
+            wildCardView1.visibility = View.GONE
+            wildCardView2.visibility = View.GONE
+            wildCardView3.visibility = View.GONE
         }
 
-        private fun setCardImageResource(cardData: GlobalCardData) {
-            val idCard = cardData.id ?: ""
-            if (idCard.length > 1) {
-                val topImage = GlobalCardData(
-                    cardData.id?.get(0)?.toString(), cardData.value, cardData.type, cardData.price
-                )
-                val downImage = GlobalCardData(
-                    cardData.id?.get(1)?.toString(), cardData.value, cardData.type, cardData.price
-                )
+        private fun setClickableForBottomCard() {
+            assetImage1.setOnClickListener(null)
+            assetImage2.setOnClickListener(null)
+            assetImage3.setOnClickListener(null)
 
-                rootWildCard.findViewById<ImageView>(R.id.iv_wild_card_top)
-                    .setImageResource(Util.mapIdToImage(topImage))
-                rootWildCard.findViewById<ImageView>(R.id.iv_wild_card_bottom)
-                    .setImageResource(Util.mapIdToImage(downImage))
-            } else {
-                assetImage1.findViewById<ImageView>(R.id.iv_card)
-                    .setImageResource(Util.mapIdToImage(cardData))
-                assetImage2.findViewById<ImageView>(R.id.iv_card)
-                    .setImageResource(Util.mapIdToImage(cardData))
-                assetImage3.findViewById<ImageView>(R.id.iv_card)
-                    .setImageResource(Util.mapIdToImage(cardData))
-            }
+            wildCardView1.setOnClickListener(null)
+            wildCardView2.setOnClickListener(null)
+            wildCardView3.setOnClickListener(null)
         }
 
-        private fun checkWildCard(view: View, cardData: GlobalCardData) {
-            val idCard = cardData.id ?: ""
+        private fun renderCard(
+            charAsset: String,
+            selectedAsset: View,
+            selectedWildAsset: View,
+            cardItem: GlobalCardData
+        ) {
+            selectedAsset.visibility = View.VISIBLE
+            setClickableForBottomCard()
 
-            if (idCard.length > 2) {
-                view.setOnClickListener {
-                    var isOriginId = false
-                    dataset.find { it.id == idCard }.let {
-                        it?.id?.reversed()
-                        it?.price = AssetUtil.assetPrice[it?.id?.get(0).toString()]
-                        isOriginId = AssetUtil.assetWildCard.contains(it?.id)
-                    }
+            if (charAsset.length > 1) setupWildCard(selectedWildAsset, cardItem, charAsset)
+            else setupAssetCard(selectedAsset, cardItem)
+        }
 
-                    notifyDataSetChanged()
-                    onRotateCard?.invoke(dataset, isOriginId)
-                }
+        private fun setupAssetCard(cardView: View, cardData: GlobalCardData) {
+            val assetImage = Util.mapIdToImage(cardData)
+
+            cardView.findViewById<TextView>(R.id.tv_card_asset_name).text =
+                "Blok ${cardData.id?.get(0)?.toUpperCase()}"
+            cardView.findViewById<TextView>(R.id.tv_card_asset_price_nominal).text =
+                cardData.price.toString()
+
+            cardView.findViewById<ImageView>(R.id.iv_card).setImageResource(assetImage)
+            cardView.setOnClickListener { onItemClick?.invoke(cardData) }
+        }
+
+        private fun setupWildCard(wildCardView: View, cardData: GlobalCardData, charId: String) {
+            val cardPrice = AssetUtil.assetPrice[charId[0].toString()]
+
+            wildCardView.visibility = View.VISIBLE
+
+            val topImage = GlobalCardData(
+                charId[0].toString(), cardData.value, cardData.type, cardData.price
+            )
+            val downImage = GlobalCardData(
+                charId[1].toString(), cardData.value, cardData.type, cardData.price
+            )
+
+            wildCardView.findViewById<ImageView>(R.id.iv_wild_card_top)
+                .setImageResource(Util.mapIdToImage(topImage))
+            wildCardView.findViewById<ImageView>(R.id.iv_wild_card_bottom)
+                .setImageResource(Util.mapIdToImage(downImage))
+
+            wildCardView.findViewById<TextView>(R.id.tv_wild_card_asset_name).text =
+                "Blok ${charId[1].toUpperCase()}"
+            wildCardView.findViewById<TextView>(R.id.tv_wild_card_asset_price).text =
+                cardPrice.toString()
+
+            wildCardView.setOnClickListener { _ ->
+                if (onRotateCard != null) {
+                    onRotateCard?.invoke(
+                        dataset.findLast { it.id == charId }!!,
+                        AssetUtil.assetWildCard.contains(charId)
+                    )
+                } else onItemClick?.invoke(cardData)
             }
         }
     }
 
     override fun getItemCount() = dataset.size
 
+    fun listAsset(): MutableList<GlobalCardData> = dataset
+
     fun replaceListAssetCard(listAssetData: MutableList<GlobalCardData>) {
         dataset = listAssetData
         assetHasBeenPosted = ""
 
+        resetAllAssetPosted()
         notifyDataSetChanged()
     }
 
-    fun listAsset(): MutableList<GlobalCardData> = dataset
 
     fun totalPriceOfAsset(cardItem: GlobalCardData): Int {
-        return dataset.filter {it.id == cardItem.id }.sumOf {
-            cardItem.price ?: 0
+        return dataset.filter { (it.id?.get(0) ?: "") == (cardItem.id?.get(0) ?: "") }.sumOf {
+            it.price ?: 0
         }
+    }
+
+    fun rotateCard(assetId: String) {
+        dataset.find { it.id == assetId }.let {
+            it?.id = it?.id?.reversed()
+            it?.price = AssetUtil.assetPrice[it?.id?.get(0).toString()]
+        }
+        assetHasBeenPosted = ""
+
+        resetAllAssetPosted()
+        notifyDataSetChanged()
     }
 }
