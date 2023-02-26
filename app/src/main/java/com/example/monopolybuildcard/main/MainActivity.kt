@@ -146,12 +146,16 @@ class MainActivity : AppCompatActivity() {
 
             when (currentPlayerData.status) {
                 PlayerStatus.WAITING -> {
+                    updatePlayerPopupWhenShown()
+
                     showEnemyPostedCard(binding, currentRoomData)
                 }
                 PlayerStatus.RESPONDING -> {
                     prepareResponseForEnemy(checkDoubleTheRent(currentRoomData.actions!!))
                 }
                 else -> {
+                    updatePlayerPopupWhenShown()
+
                     hideEnemyPostedCard(binding)
                 }
             }
@@ -324,7 +328,7 @@ class MainActivity : AppCompatActivity() {
                     CardName.ACTION_FORCED_DEAL -> forceDealAction(actionCard, position)
                     CardName.ACTION_DEBT_COLLECTOR -> debtCollectorAction(actionCard, position)
                     CardName.ACTION_HAPPY_BIRTHDAY -> happyBirthdayAction(actionCard, position)
-                    CardName.DOUBLE_THE_RENT -> doubleTheRent(actionCard, position)
+                    CardName.DOUBLE_THE_RENT -> doubleTheRent(actionCard)
                     CardName.RENT_BLOK_ANY_TYPE -> rentActionAnyAsset(mutableListOf(actionCard))
                     CardName.RENT_BLOK_BC_TYPE,
                     CardName.RENT_BLOK_DE_TYPE,
@@ -498,6 +502,7 @@ class MainActivity : AppCompatActivity() {
                 if (assetAdapter.listAsset().count { it.id == assetData.id } < 3) {
                     if (selectedOtherPlayerIndex == -1) {
                         actionCard.cardGiven = assetData
+                        binding.layoutIncludeSelectedAssetCard.root.visibility = View.VISIBLE
                         binding.layoutIncludeSelectedAssetCard.ivCard.setImageResource(
                             mapIdToImage(assetData)
                         )
@@ -505,9 +510,13 @@ class MainActivity : AppCompatActivity() {
                         binding.layoutIncludePopupPlayer.root.visibility = View.GONE
                     } else {
                         actionCard.cardTaken = assetData
+                        binding.layoutIncludeSelectedAssetCardForcedDeal.root.visibility = View.VISIBLE
                         binding.layoutIncludeSelectedAssetCardForcedDeal.ivCard.setImageResource(
                             mapIdToImage(assetData)
                         )
+
+                        currentRoomData.users?.get(selectedOtherPlayerIndex)?.status =
+                            PlayerStatus.RESPONDING
 
                         binding.layoutIncludeSelectedAssetCardForcedDeal.root.visibility = View.GONE
                         binding.layoutIncludePopupPlayer.root.visibility = View.GONE
@@ -516,8 +525,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if ((actionCard.cardTaken != null) && (actionCard.cardGiven != null)) {
-                    currentRoomData.users?.get(selectedOtherPlayerIndex)?.status =
-                        PlayerStatus.RESPONDING
+                    binding.layoutEnemyCardPosted.visibility = View.GONE
+                    binding.layoutIncludeSelectedAssetCard.root.visibility = View.GONE
                     binding.layoutIncludeSelectedAssetCardForcedDeal.root.visibility = View.GONE
 
                     postCardToServer(actionCard, position)
@@ -589,7 +598,7 @@ class MainActivity : AppCompatActivity() {
             postCardToServer(actionCard, position)
     }
 
-    private fun doubleTheRent(actionCard: GlobalActionData, position: Int) {
+    private fun doubleTheRent(actionCard: GlobalActionData) {
         prepareActionUI(binding, this, onSkip = { cancelAction() })
         cardAdapter.replaceCard(currentPlayerData.cards
             .filter { it.id?.contains("rent") == true && it.id != CardName.DOUBLE_THE_RENT }
@@ -815,7 +824,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun cancelAction() {
+        cardAdapter.replaceCard(currentPlayerData.cards)
         currentRoomData.users?.get(currentPlayerIndex)?.status = PlayerStatus.RUNNING
         resetComponent()
+    }
+
+    private fun updatePlayerPopupWhenShown() {
+        if (binding.layoutIncludePopupPlayer.root.visibility == View.VISIBLE) {
+            if (selectedOtherPlayerIndex == -1) showSelectedPlayerAssetMoneyInfo(currentPlayerData)
+            else {
+                val playerData = currentRoomData.users?.get(selectedOtherPlayerIndex)
+
+                showSelectedPlayerAssetMoneyInfo(playerData!!)
+            }
+        }
     }
 }

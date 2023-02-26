@@ -61,30 +61,17 @@ object MainUtil {
 
                         if (it.card?.id?.contains("rent") == true) {
                             ivActionRentCard.setImageResource(mapIdToImage(it.card!!))
+
                             layoutParentCard.visibility = View.INVISIBLE
                             layoutParentActionRentCard.visibility = View.VISIBLE
 
                             val itemId = it.card?.id ?: ""
+                            val whichBlock = substringLastTwoChar(itemId)
 
-                            tvActionRentTitle.text = "ASSET ${substringLastTwoChar(itemId)}"
-                            tvActionRentDesc.text =
-                                "All player pay rent based on one of these assets"
+                            tvActionRentTitle.text = "ASSET ${whichBlock}"
+                            tvActionRentDesc.text = "All player pay rent based on one of these assets"
 
                             when (itemId) {
-                                Constant.CardName.RENT_BLOK_BC_TYPE -> {
-                                    ivActionRentCenterImage.setImageResource(R.drawable.spr_card_asset_brown_apartement)
-                                    ivActionRentCenterImage2.setImageResource(R.drawable.spr_card_asset_aqua_apartement)
-                                }
-                                Constant.CardName.RENT_BLOK_DE_TYPE -> {
-                                    ivActionRentCenterImage
-                                        .setImageResource(R.drawable.spr_card_asset_red_apartement)
-                                    ivActionRentCenterImage2
-                                        .setImageResource(R.drawable.spr_card_asset_lime_apartement)
-                                }
-                                Constant.CardName.RENT_BLOK_FG_TYPE -> {
-                                    ivActionRentCenterImage.setImageResource(R.drawable.spr_card_asset_blue_apartement)
-                                    ivActionRentCenterImage2.setImageResource(R.drawable.spr_card_asset_orange_apartement)
-                                }
                                 Constant.CardName.RENT_BLOK_ANY_TYPE -> {
                                     ivActionRentCenterImage
                                         .setImageResource(R.drawable.spr_card_action_rent_any)
@@ -100,6 +87,25 @@ object MainUtil {
                                     tvActionRentTitle.text = "RENT ?"
                                     tvActionRentDesc.text =
                                         "Select any rent card you want to double with"
+                                }
+                                else -> {
+                                    val selectedCard = it.card!!
+
+                                    val topImage = GlobalCardData(
+                                        whichBlock[0].toString(),
+                                        selectedCard.value,
+                                        selectedCard.type,
+                                        selectedCard.price
+                                    )
+                                    val downImage = GlobalCardData(
+                                        whichBlock[1].toString(),
+                                        selectedCard.value,
+                                        selectedCard.type,
+                                        selectedCard.price
+                                    )
+
+                                    ivActionRentCenterImage.setImageResource(mapIdToImage(topImage))
+                                    ivActionRentCenterImage2.setImageResource(mapIdToImage(downImage))
                                 }
                             }
                         }

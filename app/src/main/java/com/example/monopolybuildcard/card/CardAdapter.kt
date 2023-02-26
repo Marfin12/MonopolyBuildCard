@@ -123,7 +123,7 @@ open class CardAdapter(
     }
 
     fun replaceActionPostedCard(actionCards: MutableList<GlobalActionData>) {
-//        this.actions = actionCards
+        this.actions = actionCards
         notifyDataSetChanged()
     }
 
