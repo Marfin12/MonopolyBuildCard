@@ -37,7 +37,7 @@ class MainViewModel : ViewModel() {
         })
     }
 
-    fun shareTheCard(roomName: String, roomData: RoomData) {
+    fun playTheGame(roomName: String, roomData: RoomData) {
         onRoomMovingListener = DatabaseReference.CompletionListener { databaseError, _ ->
             if (databaseError != null) _isSuccessful.value = false
         }
@@ -57,12 +57,8 @@ class MainViewModel : ViewModel() {
         val roomFields = HashMap<String, Any>()
         roomFields[roomName] = roomData
 
-        FirebaseDatabase.getInstance().reference
-            .child(Constant.ROOMS)
-            .updateChildren(
-                roomFields,
-                onRoomMovingListener
-            )
+        FirebaseDatabase.getInstance().reference.child(Constant.ROOMS)
+            .updateChildren(roomFields, onRoomMovingListener)
     }
 
     fun nextPlayerTurn(roomName: String, roomData: RoomData) {

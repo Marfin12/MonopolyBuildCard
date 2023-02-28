@@ -22,9 +22,7 @@ import com.google.firebase.database.*
 class MenuViewModel : ViewModel() {
     private val roomNameLength = 8
 
-    private val _menuData = MutableLiveData(MenuData(
-        null, null
-    ))
+    private val _menuData = MutableLiveData(MenuData(null, null))
     val menuData: LiveData<MenuData>
         get() = _menuData
 
@@ -46,12 +44,12 @@ class MenuViewModel : ViewModel() {
         playerListField["0"] = playerFields
         if (cardOnDeck.size > 0) {
             // deal breaker, force deal, sly deal debt & happy birthday testing
-//            cardOnDeck.swap(0, 8)
-//            cardOnDeck.swap(1, 9)
-//            cardOnDeck.swap(2, 10)
-//            cardOnDeck.swap(4, 18)
-//            cardOnDeck.swap(5, 19)
-//            cardOnDeck.swap(6, 20)
+            cardOnDeck.swap(0, 8)
+            cardOnDeck.swap(1, 9)
+            cardOnDeck.swap(2, 10)
+            cardOnDeck.swap(4, 19)
+            cardOnDeck.swap(5, 20)
+            cardOnDeck.swap(6, 21)
             // rent, double the rent & say no test
 //            cardOnDeck.swap(0, 19)
 //            cardOnDeck.swap(1, 14)
@@ -62,17 +60,17 @@ class MenuViewModel : ViewModel() {
 //            cardOnDeck.swap(6, 25)
 //            cardOnDeck.swap(7, 13)
             // wild card, flip & rent
-            cardOnDeck.swap(0, 34)
-            cardOnDeck.swap(1, 35)
-            cardOnDeck.swap(2, 19)
-            cardOnDeck.swap(3, 36)
-            cardOnDeck.swap(4, 20)
-            cardOnDeck.swap(5, 21)
-            cardOnDeck.swap(6, 22)
-            cardOnDeck.swap(7, 23)
-            cardOnDeck.swap(8, 24)
-            cardOnDeck.swap(9, 25)
-            cardOnDeck.swap(10, 26)
+//            cardOnDeck.swap(0, 34)
+//            cardOnDeck.swap(1, 35)
+//            cardOnDeck.swap(2, 19)
+//            cardOnDeck.swap(3, 36)
+//            cardOnDeck.swap(4, 20)
+//            cardOnDeck.swap(5, 21)
+//            cardOnDeck.swap(6, 22)
+//            cardOnDeck.swap(7, 23)
+//            cardOnDeck.swap(8, 24)
+//            cardOnDeck.swap(9, 25)
+//            cardOnDeck.swap(10, 26)
 
             cardListField["ready"] = cardOnDeck
 

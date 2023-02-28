@@ -29,6 +29,7 @@ import com.example.monopolybuildcard.Constant.CardName
 import com.example.monopolybuildcard.Util.mapIdToImage
 import com.example.monopolybuildcard.main.MainUtil.adjustVisibilityPopupButtonGroup
 import com.example.monopolybuildcard.main.MainUtil.hideEnemyPostedCard
+import com.example.monopolybuildcard.main.MainUtil.isPaymentActionType
 import com.example.monopolybuildcard.main.MainUtil.prepareActionUI
 import com.example.monopolybuildcard.main.MainUtil.renderWildCard
 import com.example.monopolybuildcard.main.MainUtil.showEnemyPostedCard
@@ -110,10 +111,10 @@ class MainActivity : AppCompatActivity() {
                 cardAdapter.replaceActionPostedCard(actionCardList)
 
                 actionCardList.filter { it.card?.id == CardName.ACTION_SAY_NO }.forEach {
-                    if (it.ownerId != currentPlayerData.id) {
+                    if (it.card?.ownerId != currentPlayerData.id) {
                         playerAdapter.setPlayerAction(
                             it.card!!,
-                            it.ownerId ?: ""
+                            it.card?.ownerId ?: ""
                         )
                     }
                 }
@@ -136,7 +137,7 @@ class MainActivity : AppCompatActivity() {
                     if (lastActionCard.card?.type == CardType.ACTION_TYPE) {
                         playerAdapter.setPlayerAction(
                             lastActionCard.card!!,
-                            lastActionCard.ownerId ?: ""
+                            lastActionCard.card?.ownerId ?: ""
                         )
                     }
                 } else {
@@ -234,7 +235,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnStart.setOnClickListener {
             playerAdapter.clearAllPlayer()
-            mainViewModel.shareTheCard(roomName, currentRoomData)
+            mainViewModel.playTheGame(roomName, currentRoomData)
         }
     }
 
@@ -242,6 +243,7 @@ class MainActivity : AppCompatActivity() {
         onCloseButtonPopupClick()
 
         assetAdapter.onItemClick = null
+        assetAdapter.onDealBreakerAction = null
         cardAdapter.onSayNo = null
 
         binding.rvListCard.visibility = View.VISIBLE
@@ -253,7 +255,7 @@ class MainActivity : AppCompatActivity() {
             if (currentPlayerData.status == PlayerStatus.RUNNING) {
                 addPlayerCard(cardData, position)
 
-                if (isShowPopupAfterSelectingCard) {
+                if (isShowPopupAfterSelectingCard && cardData.type != CardType.ACTION_TYPE) {
                     showSelectedPlayerAssetMoneyInfo(currentPlayerData)
                 }
             }
@@ -309,7 +311,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun addPlayerCard(cardData: GlobalCardData, position: Int) {
         var currentPlayerStatus = PlayerStatus.RUNNING
-        val actionCard = GlobalActionData(currentPlayerData.id, cardData, null, null)
+        val actionCard = GlobalActionData(cardData, null, null)
 
         when (cardData.type) {
             CardType.PROPERTY_TYPE -> currentPlayerData.properties.add(cardData)
@@ -321,7 +323,7 @@ class MainActivity : AppCompatActivity() {
                 when (cardData.id) {
                     CardName.ACTION_PASS_GO -> {
                         currentPlayerStatus = PlayerStatus.RUNNING
-                        cardAdapter.draw2Card(currentRoomData)
+                        cardAdapter.draw2Card(currentRoomData, currentPlayerIndex)
                     }
                     CardName.ACTION_SLY_DEAL -> slyDealAction(actionCard, position)
                     CardName.ACTION_DEAL_BREAKER -> dealBreakerAction(actionCard, position)
@@ -419,7 +421,6 @@ class MainActivity : AppCompatActivity() {
                     assetAdapter.listAsset()
 
                 val actionData = GlobalActionData(
-                    currentPlayerData.id,
                     GlobalCardData(
                         CardName.PROPERTY_FLIP,
                         if (isOriginId) 1 else 0,
@@ -458,7 +459,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun slyDealAction(actionCard: GlobalActionData, position: Int = -1) {
         if (position == -1) {
-            val sendToId = currentRoomData.users?.indexOfFirst { it.id == actionCard.ownerId } ?: -1
+            val sendToId =
+                currentRoomData.users?.indexOfFirst { it.id == actionCard.card?.ownerId } ?: -1
 
             currentRoomData.users?.get(currentPlayerIndex)?.properties?.remove(actionCard.cardTaken)
             currentRoomData.users?.get(sendToId)?.properties?.add(actionCard.cardTaken!!)
@@ -485,7 +487,9 @@ class MainActivity : AppCompatActivity() {
         if (position == -1) {
             val cardTaken = actionCard.cardTaken
             val cardGiven = actionCard.cardGiven
-            val sendToId = currentRoomData.users?.indexOfFirst { it.id == actionCard.ownerId } ?: -1
+            val sendToId = currentRoomData.users?.indexOfFirst {
+                it.id == actionCard.card?.ownerId
+            } ?: -1
 
             currentRoomData.users?.get(currentPlayerIndex)?.properties?.remove(cardTaken)
             currentRoomData.users?.get(currentPlayerIndex)?.properties?.add(cardGiven!!)
@@ -510,7 +514,8 @@ class MainActivity : AppCompatActivity() {
                         binding.layoutIncludePopupPlayer.root.visibility = View.GONE
                     } else {
                         actionCard.cardTaken = assetData
-                        binding.layoutIncludeSelectedAssetCardForcedDeal.root.visibility = View.VISIBLE
+                        binding.layoutIncludeSelectedAssetCardForcedDeal.root.visibility =
+                            View.VISIBLE
                         binding.layoutIncludeSelectedAssetCardForcedDeal.ivCard.setImageResource(
                             mapIdToImage(assetData)
                         )
@@ -538,15 +543,12 @@ class MainActivity : AppCompatActivity() {
     private fun dealBreakerAction(actionCard: GlobalActionData, position: Int = -1) {
         if (position == -1) {
             val selectedIndex = currentRoomData.users?.indexOfFirst {
-                it.id == actionCard.ownerId
+                it.id == actionCard.card?.ownerId
             } ?: 0
 
-            currentRoomData.users?.get(currentPlayerIndex)?.properties?.filter {
-                it.id == actionCard.cardTaken?.id
-            }?.apply {
-                currentRoomData.users?.get(selectedIndex)?.properties?.addAll(
-                    this
-                )
+            actionCard.cardDealBreaker?.forEach { cardData ->
+                currentRoomData.users?.get(selectedIndex)?.properties?.add(cardData)
+                currentRoomData.users?.get(currentPlayerIndex)?.properties?.remove(cardData)
             }
 
             currentRoomData.users?.get(currentPlayerIndex)?.properties?.removeAll {
@@ -557,16 +559,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             prepareActionUI(binding, this, onSkip = { cancelAction() })
 
-            assetAdapter.onItemClick = { assetData ->
-                val listProperties =
-                    currentRoomData.users?.get(selectedOtherPlayerIndex)?.properties
-                val charAsset = assetData.id?.get(0) ?: ' '
-                val totalAsset = listProperties?.count { it.id?.get(0) == charAsset } ?: -1
-
-                if (totalAsset >= 3 && selectedOtherPlayerIndex != -1) {
+            assetAdapter.onItemClick = null
+            assetAdapter.onDealBreakerAction = { fullAssetData ->
+                if (selectedOtherPlayerIndex != -1) {
                     currentRoomData.users?.get(selectedOtherPlayerIndex)?.status =
                         PlayerStatus.RESPONDING
-                    actionCard.cardTaken = assetData
+                    actionCard.cardDealBreaker = fullAssetData
 
                     postCardToServer(actionCard, position)
                 }
@@ -608,7 +606,7 @@ class MainActivity : AppCompatActivity() {
 
         cardAdapter.onCardAdded = { card, _ ->
             val selectedRentCard = GlobalActionData(
-                currentPlayerData.id, card, null, null
+                card, null, null
             )
             val actionCardsRent = mutableListOf(actionCard, selectedRentCard)
 
@@ -743,7 +741,7 @@ class MainActivity : AppCompatActivity() {
             resources.getColorStateList(R.color.red_700, this.theme)
         binding.btnSkip.visibility = View.VISIBLE
 
-        if (actionData.cardTaken == null && actionData.cardGiven == null) {
+        if (isPaymentActionType(actionData)) {
             binding.btnSkip.text = "Ok, I'll pay"
             showEnemyPostedCard(binding, currentRoomData)
         } else {
@@ -766,14 +764,30 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (actionData.cardGiven != null) {
-            val cardTakenId = actionData.cardTaken?.id ?: ""
+            val cardTakenId = actionData.cardGiven?.id ?: ""
 
             if (cardTakenId.length > 1) {
-                renderWildCard(binding.layoutIncludeSelectedWildCardForcedDeal, actionData.cardGiven!!)
+                renderWildCard(
+                    binding.layoutIncludeSelectedWildCardForcedDeal,
+                    actionData.cardGiven!!
+                )
             } else {
                 binding.layoutIncludeSelectedAssetCardForcedDeal.root.visibility = View.VISIBLE
                 binding.layoutIncludeSelectedAssetCardForcedDeal.ivCard
                     .setImageResource(mapIdToImage(actionData.cardGiven!!))
+            }
+        }
+
+        if (actionData.cardDealBreaker != null && actionData.cardDealBreaker!!.size > 0) {
+            val cardTaken = actionData.cardDealBreaker?.get(0)
+            val cardTakenId = cardTaken?.id ?: ""
+
+            if (cardTakenId.length > 1) {
+                renderWildCard(binding.layoutIncludeSelectedWildCard, cardTaken!!)
+            } else {
+                binding.layoutIncludeSelectedAssetCard.root.visibility = View.VISIBLE
+                binding.layoutIncludeSelectedAssetCard.ivCard
+                    .setImageResource(mapIdToImage(cardTaken!!))
             }
         }
 
@@ -789,7 +803,7 @@ class MainActivity : AppCompatActivity() {
                     isUpdateThePlayerData = false
                     currentRoomData.users?.get(currentPlayerIndex)?.status = PlayerStatus.RESPONDING
 
-                    payToPlayer(totalLoan, actionData.ownerId!!)
+                    payToPlayer(totalLoan, actionData.card?.ownerId!!)
                 }
             }
 
@@ -809,7 +823,6 @@ class MainActivity : AppCompatActivity() {
             cardAdapter.onSayNo = { position ->
                 cardAdapter.onSayNo = null
                 val actionCard = GlobalActionData(
-                    currentPlayerData.id,
                     currentRoomData.users?.get(currentPlayerIndex)?.cards?.removeAt(position)
                 )
 

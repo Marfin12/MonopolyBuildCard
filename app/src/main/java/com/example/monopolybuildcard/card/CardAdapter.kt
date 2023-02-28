@@ -96,11 +96,13 @@ open class CardAdapter(
         notifyDataSetChanged()
     }
 
-    fun draw2Card(roomData: RoomData) {
+    fun draw2Card(roomData: RoomData, currentPlayerIndex: Int) {
         val totalReadyCard = roomData.cards?.ready?.size ?: 0
 
         if (totalReadyCard > 0) {
             val sharedCard = roomData.cards?.ready?.removeAt(0)
+            sharedCard?.ownerId = roomData.users?.get(currentPlayerIndex)?.id
+
             if (sharedCard != null) {
                 dataset.add(sharedCard)
             }
@@ -108,6 +110,8 @@ open class CardAdapter(
 
         if (totalReadyCard > 0) {
             val sharedCard = roomData.cards?.ready?.removeAt(0)
+            sharedCard?.ownerId = roomData.users?.get(currentPlayerIndex)?.id
+
             if (sharedCard != null) {
                 dataset.add(sharedCard)
             }

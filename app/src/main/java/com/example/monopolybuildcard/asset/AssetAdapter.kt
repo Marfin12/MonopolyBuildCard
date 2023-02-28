@@ -23,6 +23,7 @@ open class AssetAdapter(
 
     var onItemClick: ((GlobalCardData) -> Unit)? = null
     var onRotateCard: ((GlobalCardData, Boolean) -> Unit)? = null
+    var onDealBreakerAction: ((MutableList<GlobalCardData>) -> Unit)? = null
 
     private var assetHasBeenPosted = ""
 
@@ -134,7 +135,12 @@ open class AssetAdapter(
                 cardData.price.toString()
 
             cardView.findViewById<ImageView>(R.id.iv_card).setImageResource(assetImage)
-            cardView.setOnClickListener { onItemClick?.invoke(cardData) }
+            cardView.setOnClickListener {
+                onItemClick?.invoke(cardData)
+
+                val fullProperty = getStackAssetFromChosenCard(cardData)
+                if (fullProperty.size >= 3) onDealBreakerAction?.invoke(fullProperty)
+            }
         }
 
         private fun setupWildCard(wildCardView: View, cardData: GlobalCardData, charId: String) {
@@ -165,8 +171,34 @@ open class AssetAdapter(
                         dataset.findLast { it.id == charId }!!,
                         AssetUtil.assetWildCard.contains(charId)
                     )
-                } else onItemClick?.invoke(cardData)
+                } else {
+                    onItemClick?.invoke(cardData)
+
+                    val fullProperty = getStackAssetFromChosenCard(cardData)
+                    if (fullProperty.size >= 3) onDealBreakerAction?.invoke(fullProperty)
+                }
             }
+        }
+
+        private fun getStackAssetFromChosenCard(
+            cardData: GlobalCardData
+        ): MutableList<GlobalCardData> {
+            val indexData = dataset.indexOf(cardData)
+            val prevCards = dataset.slice(0..indexData)
+            val charAsset = cardData.id ?: ""
+            var totalPropertyFound = 0
+            var index = prevCards.size - 1
+            val result = mutableListOf<GlobalCardData>()
+
+            while (totalPropertyFound <= 3 && index >= 0) {
+                if (prevCards[index].id == charAsset) {
+                    totalPropertyFound++
+                    result.add(prevCards[index])
+                }
+                index--
+            }
+
+            return result.reversed().toMutableList()
         }
     }
 

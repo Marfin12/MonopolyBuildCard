@@ -32,6 +32,8 @@ object Util {
         val totalReadyCards = roomData.cards?.ready?.size ?: 0
         if (totalReadyCards > 0) {
             val sharedCard = roomData.cards?.ready?.removeAt(0) ?: GlobalCardData()
+            sharedCard.ownerId = roomData.users?.get(currentPlayerIndex)?.id
+
             roomData.users?.get(currentPlayerIndex)?.cards?.add(sharedCard)
         }
 

@@ -5,9 +5,9 @@ import android.view.View
 import androidx.annotation.Keep
 import androidx.core.view.isVisible
 import com.example.monopolybuildcard.Constant
+import com.example.monopolybuildcard.GlobalActionData
 import com.example.monopolybuildcard.GlobalCardData
 import com.example.monopolybuildcard.R
-import com.example.monopolybuildcard.Util
 import com.example.monopolybuildcard.Util.mapIdToImage
 import com.example.monopolybuildcard.Util.substringLastTwoChar
 import com.example.monopolybuildcard.card.CardType
@@ -167,5 +167,10 @@ object MainUtil {
             ivWildCardTop.setImageResource(mapIdToImage(topImage))
             ivWildCardBottom.setImageResource(mapIdToImage(downImage))
         }
+    }
+
+    fun isPaymentActionType(actionData: GlobalActionData): Boolean {
+        return actionData.cardTaken == null && actionData.cardGiven == null
+                && actionData.cardDealBreaker == null
     }
 }
